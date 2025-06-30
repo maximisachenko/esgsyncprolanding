@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ESGSyncPRO - Transform Fuel Data into CO₂e KPIs</title>
+    <link href="../css/main.css" rel="stylesheet" />
+    <style>
+        /* Responsive menu styles */
+        @media (min-width: 1024px) {
+            .lg\:hidden { display: none !important; }
+            .hidden.lg\:flex { display: flex !important; }
+            .hidden.lg\:block { display: block !important; }
+        }
+        
+        @media (max-width: 1023px) {
+            .lg\:hidden { display: flex !important; }
+            .hidden.lg\:flex { display: none !important; }
+            .hidden.lg\:block { display: none !important; }
+        }
+        
+        /* Additional responsive padding */
+        @media (min-width: 768px) {
+            .md\:px-12 { padding-left: 3rem; padding-right: 3rem; }
+            .md\:py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+            .md\:text-5xl { font-size: 3rem; line-height: 1; }
+            .md\:text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+            .md\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+            .md\:py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+            .md\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+            .md\:py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+        }
+        
+        @media (min-width: 1024px) {
+            .lg\:px-28 { padding-left: 7rem; padding-right: 7rem; }
+            .lg\:px-20 { padding-left: 5rem; padding-right: 5rem; }
+            .lg\:py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+            .lg\:py-0 { padding-top: 0; padding-bottom: 0; }
+            .lg\:h-\[700px\] { height: 700px; }
+            .lg\:w-\[584px\] { width: 584px; }
+            .lg\:w-auto { width: auto; }
+            .lg\:text-\[60px\] { font-size: 60px; }
+            .lg\:leading-\[60px\] { line-height: 60px; }
+            .lg\:leading-\[33px\] { line-height: 33px; }
+            .lg\:text-left { text-align: left; }
+            .lg\:justify-start { justify-content: flex-start; }
+            .lg\:justify-between { justify-content: space-between; }
+            .lg\:justify-end { justify-content: flex-end; }
+            .lg\:flex-row { flex-direction: row; }
+            .lg\:mb-8 { margin-bottom: 2rem; }
+            .lg\:mx-0 { margin-left: 0; margin-right: 0; }
+            .lg\:gap-12 { gap: 3rem; }
+            .lg\:h-\[384px\] { height: 384px; }
+            .lg\:w-\[584px\] { width: 584px; }
+        }
+        
+        @media (min-width: 640px) {
+            .sm\:flex-row { flex-direction: row; }
+        }
+        
+        /* Mobile menu animation improvements */
+        .mobile-menu-transition {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                       opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                       visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Burger menu animations */
+        #burger-line-1, #burger-line-2, #burger-line-3 {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+            display: block;
+            background-color: #1f2937 !important;
+        }
+        
+        /* Mobile menu button styles */
+        #mobile-menu-button {
+            gap: 2px;
+        }
+        
+        /* Additional responsive classes */
+        .w-10 { width: 2.5rem; }
+        .h-10 { height: 2.5rem; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-gray-800 { background-color: #1f2937; }
+        .hover\:bg-gray-200:hover { background-color: #e5e7eb; }
+        .focus\:ring-2:focus { box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.5); }
+        .focus\:ring-gray-300:focus { box-shadow: 0 0 0 2px rgba(209, 213, 219, 0.5); }
+        
+        /* Footer spacing */
+        .pt-16 { padding-top: 4rem; }
+        .pb-8 { padding-bottom: 2rem; }
+        
+        /* Ensure mobile menu is hidden on desktop */
+        @media (min-width: 1024px) {
+            #mobile-menu {
+                display: none !important;
+            }
+        }
+        
+        /* Calculator result animations */
+        .result-container {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                       box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .result-container:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Form input focus states */
+        .form-input:focus {
+            border-color: #91cb24;
+            box-shadow: 0 0 0 3px rgba(145, 203, 36, 0.1);
+        }
+        
+        /* Loading state */
+        .calculating {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fmaximisach2862back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.5"></script>
+</head>
+<body class="bg-white font-inter">
+    <!-- Header -->
+    <header class="bg-white/95 border-b border-gray-200 h-[73px] relative" role="banner">
+        <div class="flex items-center justify-between h-full px-6 md:px-12 lg:px-28">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <img src="../assets/images/img_headerlogo.svg" alt="ESGSyncPRO Logo" class="h-[40px] w-[71px]" />
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <nav class="hidden lg:flex items-center space-x-8" role="navigation">
+                <a href="#home" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Home</a>
+                <a href="#features" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Features</a>
+                <a href="#pricing" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Pricing</a>
+                <a href="#docs" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Docs</a>
+                <a href="#contact" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Contact</a>
+            </nav>
+            
+            <!-- Desktop CTA Button -->
+            <button type="button" class="hidden lg:block bg-[#93cd25] text-white px-6 py-2 rounded-lg text-base font-medium hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Get started with ESGSyncPRO">
+                Get Started
+            </button>
+            
+            <!-- Mobile Menu Button -->
+            <button type="button" 
+                    class="lg:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200" 
+                    onclick="toggleMobileMenu()"
+                    aria-label="Toggle mobile menu"
+                    id="mobile-menu-button">
+                <span class="block bg-gray-800 transition-all duration-300" 
+                      id="burger-line-1" 
+                      style="width: 20px; height: 2px; margin: 2px 0;"></span>
+                <span class="block bg-gray-800 transition-all duration-300" 
+                      id="burger-line-2" 
+                      style="width: 20px; height: 2px; margin: 2px 0;"></span>
+                <span class="block bg-gray-800 transition-all duration-300" 
+                      id="burger-line-3" 
+                      style="width: 20px; height: 2px; margin: 2px 0;"></span>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation Menu -->
+        <div class="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-lg mobile-menu-transition transform translate-y-0 opacity-100 z-50" 
+             id="mobile-menu" style="transform: translateY(-100%); opacity: 0; visibility: hidden;">
+            <nav class="px-6 py-6 space-y-4" role="navigation">
+                <a href="#home" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Home</a>
+                <a href="#features" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Features</a>
+                <a href="#pricing" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Pricing</a>
+                <a href="#docs" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Docs</a>
+                <a href="#contact" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Contact</a>
+                <div class="pt-4 border-t border-gray-200">
+                    <button type="button" class="w-full bg-[#93cd25] text-white px-6 py-3 rounded-lg text-base font-medium hover:bg-[#7fb01f] transition-all duration-200" onclick="handleButtonClick(this)" aria-label="Get started with ESGSyncPRO">
+                        Get Started
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="min-h-[500px] lg:h-[700px] py-12 lg:py-0" style="background: linear-gradient(90deg, #f9fafb 0%, #ffffff 100%)">
+        <div class="flex flex-col lg:flex-row items-center justify-center lg:justify-between h-full px-6 md:px-12 lg:px-28 gap-8 lg:gap-12">
+            <!-- Left Content -->
+            <div class="flex flex-col w-full lg:w-[584px] text-center lg:text-left">
+                <h1 class="text-4xl md:text-5xl lg:text-[60px] font-bold leading-tight lg:leading-[60px] mb-6 lg:mb-8">
+                    <span class="text-gray-900">Transform Fuel Data into</span>
+                    <span class="text-[#91cb24]"> CO₂e KPIs</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-gray-600 leading-relaxed lg:leading-[33px] mb-8 max-w-[573px] mx-auto lg:mx-0">
+                    Instantly convert fuel data into CO₂e KPIs with our advanced emission calculation platform. Accurate, scalable, and developer-friendly.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <button type="button" class="bg-[#95ce24] text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-base md:text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Try demo">
+                        Try Demo
+                    </button>
+                    <button type="button" class="border-2 border-gray-300 text-gray-700 px-6 md:px-8 py-3 md:py-4 rounded-lg text-base md:text-lg font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="View documentation">
+                        View Docs
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Right Image -->
+            <div class="w-full lg:w-auto flex justify-center lg:justify-end">
+                <img src="../assets/images/img_img.png" alt="ESGSyncPRO Dashboard Preview" class="max-w-full h-auto w-full max-w-[500px] lg:h-[384px] lg:w-[584px] rounded-2xl shadow-lg" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Benefits Section -->
+    <section class="bg-white py-12 md:py-16 lg:py-20">
+        <div class="px-6 md:px-12 lg:px-28">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Key Benefits</h2>
+                <p class="text-xl text-gray-600">Everything you need for accurate emission calculations</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- High Performance -->
+                <div class="text-center">
+                    <div class="bg-emerald-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <img src="../assets/images/img_i.svg" alt="Performance Icon" class="w-6 h-8" />
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">High Performance</h3>
+                    <p class="text-base text-gray-600 leading-6">Process millions of fuel records in seconds with our optimized calculation engine.</p>
+                </div>
+                
+                <!-- Pinpoint Accuracy -->
+                <div class="text-center">
+                    <div class="bg-emerald-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <img src="../assets/images/img_i.svg" alt="Accuracy Icon" class="w-6 h-8" />
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Pinpoint Accuracy</h3>
+                    <p class="text-base text-gray-600 leading-6">Industry-standard emission factors ensure precise CO₂e calculations every time.</p>
+                </div>
+                
+                <!-- Infinite Scalability -->
+                <div class="text-center">
+                    <div class="bg-emerald-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <img src="../assets/images/img_i.svg" alt="Scalability Icon" class="w-6 h-8" />
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Infinite Scalability</h3>
+                    <p class="text-base text-gray-600 leading-6">From startups to enterprises, our platform scales with your growing data needs.</p>
+                </div>
+                
+                <!-- Open API -->
+                <div class="text-center">
+                    <div class="bg-emerald-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <img src="../assets/images/img_i.svg" alt="API Icon" class="w-6 h-8" />
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Open API</h3>
+                    <p class="text-base text-gray-600 leading-6">RESTful API with comprehensive documentation for seamless integration.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="bg-gray-50 py-12 md:py-16 lg:py-20">
+        <div class="px-6 md:px-12 lg:px-28">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+                <p class="text-xl text-gray-600">Three simple steps to emission insights</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <!-- Step 1 -->
+                <div class="text-center">
+                    <div class="bg-[#95ce24] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-white">1</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Upload Data</h3>
+                    <p class="text-base text-gray-600 leading-6">Upload your fuel consumption data via CSV, Excel, or call our API directly from your systems.</p>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="text-center">
+                    <div class="bg-[#95ce24] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-white">2</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Compute Emissions</h3>
+                    <p class="text-base text-gray-600 leading-6">Our engine automatically calculates CO₂e values using the latest emission factors and methodologies.</p>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="text-center">
+                    <div class="bg-[#95ce24] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-white">3</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Visualize & Export</h3>
+                    <p class="text-base text-gray-600 leading-6">Get interactive dashboards and export results in multiple formats for reporting and analysis.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Try It Now Section -->
+    <section class="bg-white py-12 md:py-16 lg:py-20">
+        <div class="px-6 md:px-12 lg:px-28">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Try It Now</h2>
+                <p class="text-xl text-gray-600">Calculate emissions instantly, no signup required</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto bg-gray-50 rounded-2xl p-8">
+                <form class="space-y-6" onsubmit="handleFormSubmit(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Fuel Type Dropdown -->
+                        <div>
+                            <label for="fuel-type" class="block text-sm font-medium text-gray-700 mb-2">Fuel Type</label>
+                            <div class="relative">
+                                <select id="fuel-type" name="fuel-type" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-base appearance-none cursor-pointer pr-10 form-input" onchange="handleDropdownChange(this)" aria-label="Select fuel type">
+                                    <option value="gasoline" selected>Gasoline (2.31 kg CO₂e/L)</option>
+                                    <option value="diesel">Diesel (2.68 kg CO₂e/L)</option>
+                                    <option value="natural-gas">Natural Gas (1.87 kg CO₂e/L)</option>
+                                    <option value="propane">Propane (1.54 kg CO₂e/L)</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                    <img src="../assets/images/img_arrowdown.svg" alt="Dropdown arrow" class="w-8 h-8" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Consumption Input -->
+                        <div>
+                            <label for="consumption" class="block text-sm font-medium text-gray-700 mb-2">Consumption (Liters)</label>
+                            <input type="number" id="consumption" name="consumption" placeholder="1000" min="0.1" step="0.1" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-base form-input" onchange="handleInputChange(this)" oninput="handleInputChange(this)" aria-label="Enter fuel consumption in liters" />
+                        </div>
+                    </div>
+                    
+                    <!-- Calculate Button -->
+                    <button type="submit" class="w-full bg-[#95ce24] text-white py-4 rounded-lg text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" aria-label="Calculate CO₂e emissions">
+                        Calculate CO₂e Emissions
+                    </button>
+                    
+                    <!-- Results -->
+                    <div class="bg-white border-2 border-emerald-500/20 rounded-lg p-6 text-center result-container">
+                        <div class="text-3xl font-bold text-[#91cb24] mb-2">2.31 tonnes CO₂e</div>
+                        <div class="text-base text-gray-600">Enter values above to calculate emissions</div>
+                        <div class="text-sm text-gray-500 mt-2">
+                            Based on standard emission factors
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Plans Section -->
+    <section class="bg-gray-50 py-12 md:py-16 lg:py-20">
+        <div class="px-6 md:px-12 lg:px-20">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Pricing Plans</h2>
+                <p class="text-xl text-gray-600">Choose the plan that fits your needs</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Free Plan -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Free</h3>
+                    <div class="flex items-baseline mb-6">
+                        <span class="text-4xl font-bold text-gray-900">$0</span>
+                        <span class="text-lg font-bold text-gray-600 ml-2">/month</span>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                            <span class="text-base text-black">1,000 calculations/month</span>
+                        </li>
+                        <li class="flex items-center">
+                            <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                            <span class="text-base text-black">Basic fuel types</span>
+                        </li>
+                        <li class="flex items-center">
+                            <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                            <span class="text-base text-black">API access</span>
+                        </li>
+                    </ul>
+                    
+                    <button type="button" class="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg text-base font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Get started with free plan">
+                        Get Started
+                    </button>
+                </div>
+                
+                <!-- Pro Plan -->
+                <div class="relative">
+                    <!-- Most Popular Badge -->
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <div class="bg-[#95ce24] text-white px-4 py-1 rounded-full text-sm font-medium">
+                            Most Popular
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border-2 border-[#91cb24] rounded-2xl p-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Pro</h3>
+                        <div class="flex items-baseline mb-6">
+                            <span class="text-4xl font-bold text-gray-900">$99</span>
+                            <span class="text-lg font-bold text-gray-600 ml-2">/month</span>
+                        </div>
+                        
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-center">
+                                <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                                <span class="text-base text-black">100,000 calculations/month</span>
+                            </li>
+                            <li class="flex items-center">
+                                <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                                <span class="text-base text-black">All fuel types</span>
+                            </li>
+                            <li class="flex items-center">
+                                <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                                <span class="text-base text-black">Advanced analytics</span>
+                            </li>
+                            <li class="flex items-center">
+                                <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                                <span class="text-base text-black">Priority support</span>
+                            </li>
+                        </ul>
+                        
+                        <button type="button" class="w-full bg-[#95ce24] text-white py-3 rounded-lg text-base font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Start free trial">
+                            Start Free Trial
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Enterprise Plan -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Enterprise</h3>
+                    <div class="text-4xl font-bold text-gray-900 mb-6">Custom</div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                            <span class="text-base text-black">Unlimited calculations</span>
+                        </li>
+                        <li class="flex items-center">
+                            <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                            <span class="text-base text-black">Custom integrations</span>
+                        </li>
+                        <li class="flex items-center">
+                            <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                            <span class="text-base text-black">Dedicated support</span>
+                        </li>
+                        <li class="flex items-center">
+                            <img src="../assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
+                            <span class="text-base text-black">SLA guarantee</span>
+                        </li>
+                    </ul>
+                    
+                    <button type="button" class="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg text-base font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Contact sales team">
+                        Contact Sales
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="bg-white py-12 md:py-16 lg:py-20">
+        <div class="px-6 md:px-12 lg:px-20">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900">Trusted by Industry Leaders</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                <!-- Testimonial 1 -->
+                <div class="bg-gray-50 rounded-2xl p-8">
+                    <p class="text-lg text-gray-700 mb-4">"ESGSyncPRO transformed our emission reporting process.</p>
+                    <p class="text-lg text-gray-700 mb-6">What used to take weeks now takes minutes."</p>
+                    
+                    <div class="flex items-center">
+                        <img src="../assets/images/img_img_48x48.png" alt="Sarah Chen" class="w-12 h-12 rounded-full mr-4" />
+                        <div>
+                            <div class="text-base font-semibold text-gray-900">Sarah Chen</div>
+                            <div class="text-base text-gray-600">Sustainability Director, TechCorp</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="bg-gray-50 rounded-2xl p-8">
+                    <p class="text-lg text-gray-700 mb-4">"The API integration was seamless. Our developers had it</p>
+                    <p class="text-lg text-gray-700 mb-6">running in production within hours."</p>
+                    
+                    <div class="flex items-center">
+                        <img src="../assets/images/img_img_1.png" alt="Michael Rodriguez" class="w-12 h-12 rounded-full mr-4" />
+                        <div>
+                            <div class="text-base font-semibold text-gray-900">Michael Rodriguez</div>
+                            <div class="text-base text-gray-600">CTO, GreenFleet Solutions</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 pt-16 pb-8 md:py-12" role="contentinfo">
+        <div class="px-6 md:px-12 lg:px-28">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <!-- Company Info -->
+                <div class="md:col-span-1">
+                    <img src="../assets/images/img_div.svg" alt="ESGSyncPRO Logo" class="h-[40px] w-[280px] mb-4" />
+                    <p class="text-base text-gray-400 leading-6">Transform fuel data into actionable emission insights.</p>
+                </div>
+                
+                <!-- Product Links -->
+                <div>
+                    <h3 class="text-base font-semibold text-white mb-4">Product</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#features" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Features</a></li>
+                        <li><a href="#pricing" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Pricing</a></li>
+                        <li><a href="#docs" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Documentation</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Company Links -->
+                <div>
+                    <h3 class="text-base font-semibold text-white mb-4">Company</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#about" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">About</a></li>
+                        <li><a href="#contact" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Contact</a></li>
+                        <li><a href="#privacy" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Social Links -->
+                <div>
+                    <h3 class="text-base font-semibold text-white mb-4">Connect</h3>
+                    <div class="flex space-x-4">
+                        <a href="#twitter" class="text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)" aria-label="Follow us on Twitter">
+                            <img src="../assets/images/img_frame_blue_gray_300.svg" alt="Twitter" class="w-5 h-5" />
+                        </a>
+                        <a href="#linkedin" class="text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)" aria-label="Follow us on LinkedIn">
+                            <img src="../assets/images/img_frame_blue_gray_300_20x20.svg" alt="LinkedIn" class="w-5 h-5" />
+                        </a>
+                        <a href="#github" class="text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)" aria-label="View our GitHub">
+                            <img src="../assets/images/img_frame_blue_gray_300_20x17.svg" alt="GitHub" class="w-5 h-4" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-t border-gray-800 pt-8 text-center">
+                <p class="text-base text-gray-400">© 2025 ESGSyncPRO. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu state
+        let isMobileMenuOpen = false;
+        
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const burgerLine1 = document.getElementById('burger-line-1');
+            const burgerLine2 = document.getElementById('burger-line-2');
+            const burgerLine3 = document.getElementById('burger-line-3');
+            
+            if (!mobileMenu || !burgerLine1 || !burgerLine2 || !burgerLine3) {
+                console.error('Mobile menu elements not found');
+                return;
+            }
+            
+            isMobileMenuOpen = !isMobileMenuOpen;
+            
+            if (isMobileMenuOpen) {
+                // Open menu
+                mobileMenu.style.transform = 'translateY(0)';
+                mobileMenu.style.opacity = '1';
+                mobileMenu.style.visibility = 'visible';
+                
+                // Animate burger to X
+                burgerLine1.style.transform = 'rotate(45deg) translate(5px, 5px)';
+                burgerLine2.style.opacity = '0';
+                burgerLine3.style.transform = 'rotate(-45deg) translate(7px, -6px)';
+                
+                // Prevent body scroll
+                document.body.style.overflow = 'hidden';
+            } else {
+                // Close menu
+                mobileMenu.style.transform = 'translateY(-100%)';
+                mobileMenu.style.opacity = '0';
+                mobileMenu.style.visibility = 'hidden';
+                
+                // Reset burger lines
+                burgerLine1.style.transform = '';
+                burgerLine2.style.opacity = '';
+                burgerLine3.style.transform = '';
+                
+                // Restore body scroll
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuButton = document.getElementById('mobile-menu-button');
+            
+            if (isMobileMenuOpen && !mobileMenu.contains(event.target) && !menuButton.contains(event.target)) {
+                toggleMobileMenu();
+            }
+        });
+        
+        // Navigation handler
+        function handleNavigation(element) {
+            const href = element.getAttribute('href');
+            if (href.startsWith('#')) {
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+        
+        // Mobile navigation handler (closes menu after navigation)
+        function handleMobileNavigation(element) {
+            handleNavigation(element);
+            if (isMobileMenuOpen) {
+                toggleMobileMenu();
+            }
+        }
+        
+        // Button click handler
+        function handleButtonClick(element) {
+            const text = element.textContent.trim();
+            console.log(`Button clicked: ${text}`);
+            
+            // Close mobile menu if open
+            if (isMobileMenuOpen) {
+                toggleMobileMenu();
+            }
+            
+            // Add specific functionality based on button text
+        }
+        
+        // Real-time calculation preview
+        function updatePreviewCalculation() {
+            const fuelType = document.getElementById('fuel-type')?.value;
+            const consumption = parseFloat(document.getElementById('consumption')?.value);
+            
+            const resultElement = document.querySelector('.result-container .text-3xl');
+            const descriptionElement = document.querySelector('.result-container .text-base.text-gray-600');
+            
+            if (!resultElement || !descriptionElement) {
+                console.error('Result elements not found');
+                return;
+            }
+            
+            if (!consumption || consumption <= 0 || !fuelType) {
+                resultElement.textContent = '0.00 tonnes CO₂e';
+                descriptionElement.textContent = 'Enter values above to calculate emissions';
+                return;
+            }
+            
+            const emissionFactor = emissionFactors[fuelType] || 2.31;
+            const emissionsTonnes = (consumption * emissionFactor) / 1000;
+            
+            resultElement.textContent = `${emissionsTonnes.toFixed(2)} tonnes CO₂e`;
+            
+            const fuelTypeDisplay = {
+                'gasoline': 'Gasoline',
+                'diesel': 'Diesel', 
+                'natural-gas': 'Natural Gas',
+                'propane': 'Propane'
+            };
+            
+            descriptionElement.textContent = `Preview: ${consumption}L of ${fuelTypeDisplay[fuelType]}`;
+        }
+        
+        // Dropdown change handler
+        function handleDropdownChange(element) {
+            console.log(`Dropdown changed to: ${element.value}`);
+            updatePreviewCalculation();
+        }
+        
+        // Input change handler
+        function handleInputChange(element) {
+            console.log(`Input changed: ${element.value}`);
+            updatePreviewCalculation();
+        }
+        
+        // Emission factors (kg CO₂e per liter)
+        const emissionFactors = {
+            'gasoline': 2.31,      // kg CO₂e per liter
+            'diesel': 2.68,        // kg CO₂e per liter  
+            'natural-gas': 1.87,   // kg CO₂e per liter (LNG equivalent)
+            'propane': 1.54        // kg CO₂e per liter
+        };
+        
+        // Form submit handler
+        function handleFormSubmit(event) {
+            try {
+                event.preventDefault();
+                console.log('Form submitted');
+                
+                const formData = new FormData(event.target);
+                const fuelType = formData.get('fuel-type');
+                const consumption = parseFloat(formData.get('consumption'));
+                
+                console.log('Form data:', { fuelType, consumption });
+                
+                // Validate input
+                if (!consumption || consumption <= 0) {
+                    alert('Please enter a valid consumption amount');
+                    return;
+                }
+                
+                // Get emission factor for selected fuel type
+                const emissionFactor = emissionFactors[fuelType] || 2.31;
+                
+                // Calculate emissions (convert kg to tonnes)
+                const emissionsKg = consumption * emissionFactor;
+                const emissionsTonnes = emissionsKg / 1000;
+                
+                console.log(`Calculating emissions for ${consumption} liters of ${fuelType}`);
+                console.log(`Emission factor: ${emissionFactor} kg CO₂e/L`);
+                console.log(`Total emissions: ${emissionsTonnes.toFixed(3)} tonnes CO₂e`);
+                
+                // Update result display
+                const resultElement = document.querySelector('.result-container .text-3xl');
+                const resultContainer = resultElement?.parentElement;
+                
+                console.log('Result elements found:', { resultElement: !!resultElement, resultContainer: !!resultContainer });
+                
+                if (resultElement && resultContainer) {
+                 // Add loading animation
+                 resultElement.style.opacity = '0.5';
+                 resultElement.textContent = 'Calculating...';
+                 resultElement.classList.add('calculating');
+                 
+                 // Simulate calculation delay for better UX
+                setTimeout(() => {
+                    resultElement.style.opacity = '1';
+                    resultElement.textContent = `${emissionsTonnes.toFixed(3)} tonnes CO₂e`;
+                    resultElement.classList.remove('calculating');
+                    
+                    // Update description with fuel type
+                    const descriptionElement = resultContainer.querySelector('.text-base.text-gray-600');
+                    if (descriptionElement) {
+                        const fuelTypeDisplay = {
+                            'gasoline': 'Gasoline',
+                            'diesel': 'Diesel',
+                            'natural-gas': 'Natural Gas',
+                            'propane': 'Propane'
+                        };
+                        descriptionElement.textContent = `✅ Final calculation: ${consumption}L of ${fuelTypeDisplay[fuelType]}`;
+                    }
+                    
+                    // Add visual feedback
+                    resultContainer.style.transform = 'scale(1.02)';
+                    resultContainer.style.borderColor = '#91cb24';
+                    setTimeout(() => {
+                        resultContainer.style.transform = 'scale(1)';
+                        resultContainer.style.borderColor = '';
+                    }, 500);
+                }, 800);
+            } else {
+                console.error('Result elements not found in DOM');
+                alert('Error: Could not find result display elements');
+            }
+            
+            } catch (error) {
+                console.error('Error in form submission:', error);
+                alert('An error occurred while calculating emissions. Please try again.');
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 1024 && isMobileMenuOpen) {
+                toggleMobileMenu();
+            }
+        });
+        
+        // Initialize mobile menu and calculator on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) {
+                // Ensure menu is closed on load
+                mobileMenu.style.transform = 'translateY(-100%)';
+                mobileMenu.style.opacity = '0';
+                mobileMenu.style.visibility = 'hidden';
+                isMobileMenuOpen = false;
+            }
+            
+            // Check if calculator elements exist
+            const resultElement = document.querySelector('.result-container .text-3xl');
+            const consumptionInput = document.getElementById('consumption');
+            const fuelTypeSelect = document.getElementById('fuel-type');
+            
+            console.log('Calculator elements found:', {
+                resultElement: !!resultElement,
+                consumptionInput: !!consumptionInput,
+                fuelTypeSelect: !!fuelTypeSelect
+            });
+            
+            // Initialize calculator with default values
+            if (consumptionInput && !consumptionInput.value) {
+                consumptionInput.value = '1000';
+            }
+            
+            // Run initial calculation
+            setTimeout(updatePreviewCalculation, 100);
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>
