@@ -123,6 +123,42 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+        
+        /* Hero image aspect ratio preservation */
+        .hero-image {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+        }
+        
+        /* Full-width hero image */
+        .hero-image-fullwidth {
+            width: 100vw;
+            height: auto;
+            object-fit: cover;
+            max-height: 500px;
+        }
+        
+        @media (max-width: 639px) {
+            .hero-image {
+                max-width: 400px;
+            }
+            
+            .hero-image-fullwidth {
+                max-height: 300px;
+                aspect-ratio: 584/200;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-image {
+                max-width: 300px;
+            }
+            
+            .hero-image-fullwidth {
+                max-height: 250px;
+            }
+        }
     </style>
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fmaximisach2862back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.5"></script>
 </head>
@@ -186,20 +222,20 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="min-h-[500px] lg:h-[700px] py-12 lg:py-0" style="background: linear-gradient(90deg, #f9fafb 0%, #ffffff 100%)">
-        <div class="flex flex-col lg:flex-row items-center justify-center lg:justify-between h-full px-6 md:px-12 lg:px-28 gap-8 lg:gap-12">
-            <!-- Left Content -->
-            <div class="flex flex-col w-full lg:w-[584px] text-center lg:text-left">
+    <section class="min-h-[500px] py-12" style="background: linear-gradient(90deg, #f9fafb 0%, #ffffff 100%)">
+        <div class="flex flex-col items-center justify-center h-full px-6 md:px-12 lg:px-28 gap-8 lg:gap-12">
+            <!-- Text Content -->
+            <div class="flex flex-col w-full max-w-4xl text-center">
                 <h1 class="text-4xl md:text-5xl lg:text-[60px] font-bold leading-tight lg:leading-[60px] mb-6 lg:mb-8">
                     <span class="text-gray-900">Transform Fuel Data into</span>
                     <span class="text-[#91cb24]"> CO₂e KPIs</span>
                 </h1>
                 
-                <p class="text-lg md:text-xl text-gray-600 leading-relaxed lg:leading-[33px] mb-8 max-w-[573px] mx-auto lg:mx-0">
+                <p class="text-lg md:text-xl text-gray-600 leading-relaxed lg:leading-[33px] mb-8 max-w-[573px] mx-auto">
                     Instantly convert fuel data into CO₂e KPIs with our advanced emission calculation platform. Accurate, scalable, and developer-friendly.
                 </p>
                 
-                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <button type="button" class="bg-[#95ce24] text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-base md:text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Try demo">
                         Try Demo
                     </button>
@@ -209,9 +245,9 @@
                 </div>
             </div>
             
-            <!-- Right Image -->
-            <div class="w-full lg:w-auto flex justify-center lg:justify-end">
-                <img src="assets/images/img_img.png" alt="ESGSyncPRO Dashboard Preview" class="max-w-full h-auto w-full max-w-[500px] lg:h-[384px] lg:w-[584px] rounded-2xl shadow-lg" />
+            <!-- Bottom Image -->
+            <div class="w-full flex justify-center flex-shrink-0 -mx-6 md:-mx-12 lg:-mx-28">
+                <img src="assets/images/img_img.png" alt="ESGSyncPRO Dashboard Preview" class="hero-image-fullwidth rounded-2xl shadow-lg object-cover flex-shrink-0" />
             </div>
         </div>
     </section>
