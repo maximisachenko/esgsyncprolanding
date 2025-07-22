@@ -132,32 +132,263 @@
             height: auto;
         }
         
-        /* Full-width hero image */
-        .hero-image-fullwidth {
-            width: 100vw;
+        /* Full-width hero video */
+        .hero-video-fullwidth {
+            max-width: 100%;
             height: auto;
-            object-fit: cover;
-            max-height: 500px;
+            object-fit: contain;
+            border-radius: 16px;
+        }
+        
+        /* Custom video controls */
+        .custom-video-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            width: auto;
+        }
+        
+        .custom-video {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+        }
+        
+        .custom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 0 0 16px 16px;
+        }
+        
+        .custom-video-container:hover .custom-controls {
+            opacity: 1;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+        
+        .control-btn:hover {
+            background: rgba(145, 203, 36, 0.8);
+            transform: scale(1.1);
+        }
+        
+        .control-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+        
+        .progress-container {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            min-width: 60px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #91cb24;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s ease;
+            position: relative;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #91cb24;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .volume-slider {
+            width: 50px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .volume-progress {
+            height: 100%;
+            background: #91cb24;
+            border-radius: 2px;
+            width: 100%;
+            position: relative;
+        }
+        
+        .volume-progress::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: #91cb24;
+            border-radius: 50%;
+        }
+        
+        .time-display {
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .fullscreen-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+        
+        .fullscreen-btn:hover {
+            background: rgba(145, 203, 36, 0.8);
+        }
+        
+        .fullscreen-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
         }
         
         @media (max-width: 639px) {
-            .hero-image {
-                max-width: 400px;
+            .custom-controls {
+                padding: 10px;
+                gap: 8px;
             }
             
-            .hero-image-fullwidth {
-                max-height: 300px;
-                aspect-ratio: 584/200;
+            .control-btn {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .control-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+            
+            .volume-container {
+                gap: 4px;
+            }
+            
+            .volume-slider {
+                width: 40px;
+                height: 3px;
+            }
+            
+            .time-display {
+                font-size: 10px;
+                min-width: 60px;
+            }
+            
+            .fullscreen-btn {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .fullscreen-btn svg {
+                width: 12px;
+                height: 12px;
+            }
+            
+            .progress-container {
+                height: 3px;
+                min-width: 40px;
+            }
+            
+            .progress-bar::after {
+                width: 6px;
+                height: 6px;
+                right: -3px;
             }
         }
         
         @media (max-width: 480px) {
-            .hero-image {
-                max-width: 300px;
+            .custom-controls {
+                padding: 8px;
+                gap: 6px;
             }
             
-            .hero-image-fullwidth {
-                max-height: 250px;
+            .control-btn {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .control-btn svg {
+                width: 12px;
+                height: 12px;
+            }
+            
+            .volume-slider {
+                width: 30px;
+            }
+            
+            .time-display {
+                font-size: 9px;
+                min-width: 50px;
+            }
+            
+            .fullscreen-btn {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .fullscreen-btn svg {
+                width: 10px;
+                height: 10px;
+            }
+            
+            .volume-container {
+                display: none;
             }
         }
     </style>
@@ -241,9 +472,62 @@
                 </div>
             </div>
             
-            <!-- Bottom Image -->
-            <div class="w-full flex justify-center flex-shrink-0 -mx-6 md:-mx-12 lg:-mx-28">
-                <img src="assets/images/img_img.png" alt="ESGSyncPRO Dashboard Preview" class="hero-image-fullwidth rounded-2xl shadow-lg object-cover flex-shrink-0" />
+            <!-- Bottom Video -->
+            <div class="w-full flex justify-center flex-shrink-0 px-6 md:px-12 lg:px-28">
+                <div class="custom-video-container rounded-2xl shadow-lg overflow-hidden">
+                    <video 
+                        id="hero-video"
+                        class="custom-video" 
+                        loop 
+                        playsinline>
+                        <source src="public/invideo-ai-1080 Demo ESG Sync PRO_ Raport ESG w 3 klikni 2025-07-19.mp4" type="video/mp4">
+                        <!-- Fallback image if video doesn't load -->
+                        <img src="assets/images/img_img.png" alt="ESGSyncPRO Dashboard Preview" class="hero-video-fullwidth rounded-2xl shadow-lg object-cover flex-shrink-0" />
+                    </video>
+                    
+                    <!-- Custom Controls -->
+                    <div class="custom-controls">
+                        <!-- Play/Pause Button -->
+                        <button class="control-btn" id="play-pause-btn" onclick="togglePlayPause()">
+                            <svg id="play-icon" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <svg id="pause-icon" viewBox="0 0 24 24" style="display: none;">
+                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- Progress Bar -->
+                        <div class="progress-container" onclick="setProgress(event)">
+                            <div class="progress-bar" id="progress-bar"></div>
+                        </div>
+                        
+                        <!-- Time Display -->
+                        <div class="time-display" id="time-display">0:00 / 0:00</div>
+                        
+                        <!-- Volume Controls -->
+                        <div class="volume-container">
+                            <button class="control-btn" id="volume-btn" onclick="toggleMute()">
+                                <svg id="volume-icon" viewBox="0 0 24 24">
+                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                </svg>
+                                <svg id="mute-icon" viewBox="0 0 24 24" style="display: none;">
+                                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                                </svg>
+                            </button>
+                            <div class="volume-slider" onclick="setVolume(event)">
+                                <div class="volume-progress" id="volume-progress"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fullscreen Button -->
+                        <button class="fullscreen-btn" onclick="toggleFullscreen()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -492,45 +776,6 @@
                     <button type="button" class="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg text-base font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Contact sales team">
                         Contact Sales
                     </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="bg-white py-12 md:py-16 lg:py-20">
-        <div class="px-6 md:px-12 lg:px-20">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900">Trusted by Industry Leaders</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-                <!-- Testimonial 1 -->
-                <div class="bg-gray-50 rounded-2xl p-8">
-                    <p class="text-lg text-gray-700 mb-4">"ESGSyncPRO transformed our emission reporting process.</p>
-                    <p class="text-lg text-gray-700 mb-6">What used to take weeks now takes minutes."</p>
-                    
-                    <div class="flex items-center">
-                        <img src="assets/images/img_img_48x48.png" alt="Sarah Chen" class="w-12 h-12 rounded-full mr-4" />
-                        <div>
-                            <div class="text-base font-semibold text-gray-900">Sarah Chen</div>
-                            <div class="text-base text-gray-600">Sustainability Director, TechCorp</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Testimonial 2 -->
-                <div class="bg-gray-50 rounded-2xl p-8">
-                    <p class="text-lg text-gray-700 mb-4">"The API integration was seamless. Our developers had it</p>
-                    <p class="text-lg text-gray-700 mb-6">running in production within hours."</p>
-                    
-                    <div class="flex items-center">
-                        <img src="assets/images/img_img_1.png" alt="Michael Rodriguez" class="w-12 h-12 rounded-full mr-4" />
-                        <div>
-                            <div class="text-base font-semibold text-gray-900">Michael Rodriguez</div>
-                            <div class="text-base text-gray-600">CTO, GreenFleet Solutions</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -849,7 +1094,140 @@
             
             // Run initial calculation
             setTimeout(updatePreviewCalculation, 100);
+            
+            // Initialize custom video player
+            initCustomVideoPlayer();
         });
+        
+        // Custom Video Player Functions
+        let video, playPauseBtn, playIcon, pauseIcon, progressBar, timeDisplay, volumeBtn, volumeIcon, muteIcon, volumeProgress;
+        
+        function initCustomVideoPlayer() {
+            video = document.getElementById('hero-video');
+            playPauseBtn = document.getElementById('play-pause-btn');
+            playIcon = document.getElementById('play-icon');
+            pauseIcon = document.getElementById('pause-icon');
+            progressBar = document.getElementById('progress-bar');
+            timeDisplay = document.getElementById('time-display');
+            volumeBtn = document.getElementById('volume-btn');
+            volumeIcon = document.getElementById('volume-icon');
+            muteIcon = document.getElementById('mute-icon');
+            volumeProgress = document.getElementById('volume-progress');
+            
+            if (!video) return;
+            
+            // Update progress bar and time display
+            video.addEventListener('timeupdate', updateProgress);
+            video.addEventListener('loadedmetadata', updateTimeDisplay);
+            video.addEventListener('ended', function() {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            });
+            
+            // Set initial volume
+            video.volume = 1;
+            updateVolumeDisplay();
+        }
+        
+        function togglePlayPause() {
+            if (!video) return;
+            
+            if (video.paused) {
+                video.play();
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            } else {
+                video.pause();
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }
+        }
+        
+        function updateProgress() {
+            if (!video || !progressBar) return;
+            
+            const progress = (video.currentTime / video.duration) * 100;
+            progressBar.style.width = progress + '%';
+            updateTimeDisplay();
+        }
+        
+        function updateTimeDisplay() {
+            if (!video || !timeDisplay) return;
+            
+            const current = formatTime(video.currentTime);
+            const duration = formatTime(video.duration);
+            timeDisplay.textContent = `${current} / ${duration}`;
+        }
+        
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+        
+        function setProgress(event) {
+            if (!video) return;
+            
+            const progressContainer = event.currentTarget;
+            const clickX = event.offsetX;
+            const width = progressContainer.offsetWidth;
+            const newTime = (clickX / width) * video.duration;
+            
+            video.currentTime = newTime;
+        }
+        
+        function toggleMute() {
+            if (!video) return;
+            
+            video.muted = !video.muted;
+            updateVolumeDisplay();
+        }
+        
+        function updateVolumeDisplay() {
+            if (!volumeIcon || !muteIcon || !volumeProgress) return;
+            
+            if (video.muted || video.volume === 0) {
+                volumeIcon.style.display = 'none';
+                muteIcon.style.display = 'block';
+            } else {
+                volumeIcon.style.display = 'block';
+                muteIcon.style.display = 'none';
+            }
+            
+            volumeProgress.style.width = (video.volume * 100) + '%';
+        }
+        
+        function setVolume(event) {
+            if (!video) return;
+            
+            const volumeSlider = event.currentTarget;
+            const clickX = event.offsetX;
+            const width = volumeSlider.offsetWidth;
+            const newVolume = clickX / width;
+            
+            video.volume = Math.max(0, Math.min(1, newVolume));
+            video.muted = false;
+            updateVolumeDisplay();
+        }
+        
+        function toggleFullscreen() {
+            if (!video) return;
+            
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                const container = video.closest('.custom-video-container');
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+            }
+        }
     </script>
 <script id="dhws-dataInjector" src="public/dhws-data-injector.js"></script>
 </body>
