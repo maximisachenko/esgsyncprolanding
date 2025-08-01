@@ -6,6 +6,7 @@
     <title>ESGSync</title>
     <link href="css/main.css" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <script src="https://unpkg.com/feather-icons"></script>
     <style>
         /* Responsive menu styles */
         @media (min-width: 1024px) {
@@ -391,12 +392,49 @@
                 display: none;
             }
         }
+        
+        /* Language selector styles - Button/Dropdown design */
+        .language-button {
+            border: 1px solid #10b981; /* green-500 */
+            border-radius: 8px;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .language-button:hover {
+            background-color: #f9fafb; /* gray-50 */
+        }
+        
+        .language-dropdown {
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .language-option-active {
+            background-color: #dcfce7 !important; /* green-100 */
+            color: #166534 !important; /* green-800 */
+        }
+        
+        .language-option-active:hover {
+            background-color: #dcfce7 !important;
+        }
+        
+        /* Mobile language selector improvements */
+        @media (max-width: 1023px) {
+            .mobile-language-button {
+                border-radius: 8px;
+                transition: all 0.2s ease;
+            }
+            
+            .mobile-language-button:hover:not(.bg-green-100) {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+        }
     </style>
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fmaximisach2862back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.5"></script>
 </head>
 <body class="bg-white font-inter">
     <!-- Header -->
-    <header class="bg-white/95 border-b border-gray-200 h-[73px] relative" role="banner">
+    <header class="sticky top-0 z-50 bg-white/95 border-b border-gray-200 h-[73px] transition-transform duration-300" role="banner" id="main-header">
         <div class="flex items-center justify-between h-full px-6 md:px-12 lg:px-28">
             <!-- Logo -->
             <div class="flex items-center">
@@ -405,17 +443,56 @@
             
             <!-- Desktop Navigation -->
             <nav class="hidden lg:flex items-center space-x-8" role="navigation">
-                <a href="#home" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Home</a>
-                <a href="#features" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Features</a>
-                <a href="#pricing" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Pricing</a>
-                <a href="#docs" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Docs</a>
-                <a href="#contact" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this)">Contact</a>
+                <a href="#home" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this); return false;" data-translate="nav.home">Home</a>
+                <a href="#features" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this); return false;" data-translate="nav.features">Features</a>
+                <a href="#pricing" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this); return false;" data-translate="nav.pricing">Pricing</a>
+                <a href="#docs" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this); return false;" data-translate="nav.docs">Docs</a>
+                <a href="#contact" class="text-gray-700 text-base font-normal hover:text-green-500 transition-colors" onclick="handleNavigation(this); return false;" data-translate="nav.contact">Contact</a>
             </nav>
             
-            <!-- Desktop CTA Button -->
-            <button type="button" class="hidden lg:block bg-[#93cd25] text-white px-6 py-2 rounded-lg text-base font-medium hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Get started with ESGSyncPRO">
-                Get Started
-            </button>
+            <!-- Language Selector & CTA Button -->
+            <div class="hidden lg:flex items-center space-x-4">
+                <!-- Language Selector -->
+                <div class="flex items-center gap-4">
+                    <!-- Language Icon (Globe) -->
+                    <i data-feather="globe" class="w-5 h-5 text-gray-400"></i>
+                    
+                    <!-- Custom Language Button & Dropdown -->
+                    <div class="relative">
+                        <button type="button" 
+                                class="flex items-center justify-between w-[140px] px-4 py-2 text-gray-700 bg-white border border-green-500 rounded-lg hover:bg-gray-50 transition-colors"
+                                onclick="toggleLanguageDropdown()"
+                                id="language-selector">
+                            <span id="current-language" class="text-base font-normal">English</span>
+                            <svg class="w-4 h-4 transition-transform text-gray-900" id="language-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Language Dropdown -->
+                        <div class="absolute top-full left-0 mt-1 w-[140px] bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible transition-all duration-200 z-50"
+                             id="language-dropdown">
+                            <button type="button" 
+                                    class="w-full text-left px-4 py-3 text-base text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                                    onclick="changeLanguage('en')"
+                                    id="lang-option-en">
+                                English
+                            </button>
+                            <button type="button" 
+                                    class="w-full text-left px-4 py-3 text-base text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                                    onclick="changeLanguage('pl')"
+                                    id="lang-option-pl">
+                                Polish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CTA Button -->
+                <button type="button" class="bg-[#93cd25] text-white px-6 py-2 rounded-lg text-base font-medium hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Get started with ESGSyncPRO" data-translate="cta.getStarted">
+                    Get Started
+                </button>
+            </div>
             
             <!-- Mobile Menu Button -->
             <button type="button" 
@@ -439,34 +516,53 @@
         <div class="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-lg mobile-menu-transition transform translate-y-0 opacity-100 z-50" 
              id="mobile-menu" style="transform: translateY(-100%); opacity: 0; visibility: hidden;">
             <nav class="px-6 py-6 space-y-4" role="navigation">
-                <a href="#home" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Home</a>
-                <a href="#features" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Features</a>
-                <a href="#pricing" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Pricing</a>
-                <a href="#docs" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Docs</a>
-                <a href="#contact" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this)">Contact</a>
+                <a href="#home" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this); return false;" data-translate="nav.home">Home</a>
+                <a href="#features" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this); return false;" data-translate="nav.features">Features</a>
+                <a href="#pricing" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this); return false;" data-translate="nav.pricing">Pricing</a>
+                <a href="#docs" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this); return false;" data-translate="nav.docs">Docs</a>
+                <a href="#contact" class="block text-gray-700 text-lg font-normal hover:text-green-500 transition-colors py-2" onclick="handleMobileNavigation(this); return false;" data-translate="nav.contact">Contact</a>
+                
+                <!-- Mobile Language Selector -->
+                <div class="border-t border-gray-200 pt-4">
+                    <div class="text-sm font-medium text-gray-500 mb-2" data-translate="language.select">Language</div>
+                    <div class="space-y-2">
+                        <button type="button" 
+                                class="mobile-language-button w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                                onclick="changeLanguage('en')"
+                                id="mobile-lang-option-en">
+                            English
+                        </button>
+                        <button type="button" 
+                                class="mobile-language-button w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                                onclick="changeLanguage('pl')"
+                                id="mobile-lang-option-pl">
+                            Polish
+                        </button>
+                    </div>
+                </div>
             </nav>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="min-h-[500px] py-12" style="background: linear-gradient(90deg, #f9fafb 0%, #ffffff 100%)">
+    <section id="home" class="min-h-[500px] py-12" style="background: linear-gradient(90deg, #f9fafb 0%, #ffffff 100%)">
         <div class="flex flex-col items-center justify-center h-full px-6 md:px-12 lg:px-28 gap-8 lg:gap-12">
             <!-- Text Content -->
             <div class="flex flex-col w-full max-w-4xl text-center">
                 <h1 class="text-4xl md:text-5xl lg:text-[60px] font-bold leading-tight lg:leading-[60px] mb-6 lg:mb-8">
-                    <span class="text-gray-900">Transform Fuel Data into</span>
-                    <span class="text-[#91cb24]"> CO₂e KPIs</span>
+                    <span class="text-gray-900" data-translate="hero.title.part1">Transform Fuel Data into</span>
+                    <span class="text-[#91cb24]" data-translate="hero.title.part2"> CO₂e KPIs</span>
                 </h1>
                 
-                <p class="text-lg md:text-xl text-gray-600 leading-relaxed lg:leading-[33px] mb-8 max-w-[573px] mx-auto">
+                <p class="text-lg md:text-xl text-gray-600 leading-relaxed lg:leading-[33px] mb-8 max-w-[573px] mx-auto" data-translate="hero.subtitle">
                     Instantly convert fuel data into CO₂e KPIs with our advanced emission calculation platform. Accurate, scalable, and developer-friendly.
                 </p>
                 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button type="button" class="bg-[#95ce24] text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-base md:text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Try demo">
+                    <button type="button" class="bg-[#95ce24] text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-base md:text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Try demo" data-translate="cta.tryDemo">
                         Try Demo
                     </button>
-                    <button type="button" class="border-2 border-gray-300 text-gray-700 px-6 md:px-8 py-3 md:py-4 rounded-lg text-base md:text-lg font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="View documentation">
+                    <button type="button" class="border-2 border-gray-300 text-gray-700 px-6 md:px-8 py-3 md:py-4 rounded-lg text-base md:text-lg font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="View documentation" data-translate="cta.viewDocs">
                         View Docs
                     </button>
                 </div>
@@ -533,11 +629,11 @@
     </section>
 
     <!-- Key Benefits Section -->
-    <section class="bg-white py-12 md:py-16 lg:py-20">
+    <section id="features" class="bg-white py-12 md:py-16 lg:py-20">
         <div class="px-6 md:px-12 lg:px-28">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Key Benefits</h2>
-                <p class="text-xl text-gray-600">Everything you need for accurate emission calculations</p>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="benefits.title">Key Benefits</h2>
+                <p class="text-xl text-gray-600" data-translate="benefits.subtitle">Everything you need for accurate emission calculations</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -546,8 +642,8 @@
                     <div class="bg-emerald-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                         <img src="assets/images/img_i.svg" alt="Performance Icon" class="w-6 h-8" />
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">High Performance</h3>
-                    <p class="text-base text-gray-600 leading-6">Process millions of fuel records in seconds with our optimized calculation engine.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4" data-translate="benefits.performance.title">High Performance</h3>
+                    <p class="text-base text-gray-600 leading-6" data-translate="benefits.performance.description">Process millions of fuel records in seconds with our optimized calculation engine.</p>
                 </div>
                 
                 <!-- Pinpoint Accuracy -->
@@ -555,8 +651,8 @@
                     <div class="bg-emerald-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                         <img src="assets/images/img_i.svg" alt="Accuracy Icon" class="w-6 h-8" />
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Pinpoint Accuracy</h3>
-                    <p class="text-base text-gray-600 leading-6">Industry-standard emission factors ensure precise CO₂e calculations every time.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4" data-translate="benefits.accuracy.title">Pinpoint Accuracy</h3>
+                    <p class="text-base text-gray-600 leading-6" data-translate="benefits.accuracy.description">Industry-standard emission factors ensure precise CO₂e calculations every time.</p>
                 </div>
                 
                 <!-- Infinite Scalability -->
@@ -564,8 +660,8 @@
                     <div class="bg-emerald-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                         <img src="assets/images/img_i.svg" alt="Scalability Icon" class="w-6 h-8" />
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Infinite Scalability</h3>
-                    <p class="text-base text-gray-600 leading-6">From startups to enterprises, our platform scales with your growing data needs.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4" data-translate="benefits.scalability.title">Infinite Scalability</h3>
+                    <p class="text-base text-gray-600 leading-6" data-translate="benefits.scalability.description">From startups to enterprises, our platform scales with your growing data needs.</p>
                 </div>
                 
                 <!-- Open API -->
@@ -573,8 +669,8 @@
                     <div class="bg-emerald-500/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                         <img src="assets/images/img_i.svg" alt="API Icon" class="w-6 h-8" />
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Open API</h3>
-                    <p class="text-base text-gray-600 leading-6">RESTful API with comprehensive documentation for seamless integration.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4" data-translate="benefits.api.title">Open API</h3>
+                    <p class="text-base text-gray-600 leading-6" data-translate="benefits.api.description">RESTful API with comprehensive documentation for seamless integration.</p>
                 </div>
             </div>
         </div>
@@ -584,8 +680,8 @@
     <section class="bg-gray-50 py-12 md:py-16 lg:py-20">
         <div class="px-6 md:px-12 lg:px-28">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
-                <p class="text-xl text-gray-600">Three simple steps to emission insights</p>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="howItWorks.title">How It Works</h2>
+                <p class="text-xl text-gray-600" data-translate="howItWorks.subtitle">Three simple steps to emission insights</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -594,8 +690,8 @@
                     <div class="bg-[#95ce24] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                         <span class="text-2xl font-bold text-white">1</span>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Upload Data</h3>
-                    <p class="text-base text-gray-600 leading-6">Upload your fuel consumption data via CSV, Excel, or call our API directly from your systems.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4" data-translate="howItWorks.step1.title">Upload Data</h3>
+                    <p class="text-base text-gray-600 leading-6" data-translate="howItWorks.step1.description">Upload your fuel consumption data via CSV, Excel, or call our API directly from your systems.</p>
                 </div>
                 
                 <!-- Step 2 -->
@@ -603,8 +699,8 @@
                     <div class="bg-[#95ce24] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                         <span class="text-2xl font-bold text-white">2</span>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Compute Emissions</h3>
-                    <p class="text-base text-gray-600 leading-6">Our engine automatically calculates CO₂e values using the latest emission factors and methodologies.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4" data-translate="howItWorks.step2.title">Compute Emissions</h3>
+                    <p class="text-base text-gray-600 leading-6" data-translate="howItWorks.step2.description">Our engine automatically calculates CO₂e values using the latest emission factors and methodologies.</p>
                 </div>
                 
                 <!-- Step 3 -->
@@ -612,8 +708,8 @@
                     <div class="bg-[#95ce24] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
                         <span class="text-2xl font-bold text-white">3</span>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Visualize & Export</h3>
-                    <p class="text-base text-gray-600 leading-6">Get interactive dashboards and export results in multiple formats for reporting and analysis.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4" data-translate="howItWorks.step3.title">Visualize & Export</h3>
+                    <p class="text-base text-gray-600 leading-6" data-translate="howItWorks.step3.description">Get interactive dashboards and export results in multiple formats for reporting and analysis.</p>
                 </div>
             </div>
         </div>
@@ -623,8 +719,8 @@
     <section class="bg-white py-12 md:py-16 lg:py-20">
         <div class="px-6 md:px-12 lg:px-28">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Try It Now</h2>
-                <p class="text-xl text-gray-600">Calculate emissions instantly, no signup required</p>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="calculator.title">Try It Now</h2>
+                <p class="text-xl text-gray-600" data-translate="calculator.subtitle">Calculate emissions instantly, no signup required</p>
             </div>
             
             <div class="max-w-4xl mx-auto bg-gray-50 rounded-2xl p-8">
@@ -632,13 +728,13 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Fuel Type Dropdown -->
                         <div>
-                            <label for="fuel-type" class="block text-sm font-medium text-gray-700 mb-2">Fuel Type</label>
+                            <label for="fuel-type" class="block text-sm font-medium text-gray-700 mb-2" data-translate="calculator.fuelType">Fuel Type</label>
                             <div class="relative">
                                 <select id="fuel-type" name="fuel-type" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-base appearance-none cursor-pointer pr-10 form-input" onchange="handleDropdownChange(this)" aria-label="Select fuel type">
-                                    <option value="gasoline" selected>Gasoline (2.31 kg CO₂e/L)</option>
-                                    <option value="diesel">Diesel (2.68 kg CO₂e/L)</option>
-                                    <option value="natural-gas">Natural Gas (1.87 kg CO₂e/L)</option>
-                                    <option value="propane">Propane (1.54 kg CO₂e/L)</option>
+                                    <option value="gasoline" selected data-translate-option="calculator.fuelTypes.gasoline">Gasoline (2.31 kg CO₂e/L)</option>
+                                    <option value="diesel" data-translate-option="calculator.fuelTypes.diesel">Diesel (2.68 kg CO₂e/L)</option>
+                                    <option value="natural-gas" data-translate-option="calculator.fuelTypes.naturalGas">Natural Gas (1.87 kg CO₂e/L)</option>
+                                    <option value="propane" data-translate-option="calculator.fuelTypes.propane">Propane (1.54 kg CO₂e/L)</option>
                                 </select>
                                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                     <img src="assets/images/img_arrowdown.svg" alt="Dropdown arrow" class="w-8 h-8" />
@@ -648,21 +744,21 @@
                         
                         <!-- Consumption Input -->
                         <div>
-                            <label for="consumption" class="block text-sm font-medium text-gray-700 mb-2">Consumption (Liters)</label>
-                            <input type="number" id="consumption" name="consumption" placeholder="1000" min="0.1" step="0.1" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-base form-input" onchange="handleInputChange(this)" oninput="handleInputChange(this)" aria-label="Enter fuel consumption in liters" />
+                            <label for="consumption" class="block text-sm font-medium text-gray-700 mb-2" data-translate="calculator.consumption">Consumption (Liters)</label>
+                            <input type="number" id="consumption" name="consumption" placeholder="1000" min="0.1" step="0.1" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-base form-input" onchange="handleInputChange(this)" oninput="handleInputChange(this)" aria-label="Enter fuel consumption in liters" data-translate-placeholder="calculator.consumptionPlaceholder" />
                         </div>
                     </div>
                     
                     <!-- Calculate Button -->
-                    <button type="submit" class="w-full bg-[#95ce24] text-white py-4 rounded-lg text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" aria-label="Calculate CO₂e emissions">
+                    <button type="submit" class="w-full bg-[#95ce24] text-white py-4 rounded-lg text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" aria-label="Calculate CO₂e emissions" data-translate="calculator.calculate">
                         Calculate CO₂e Emissions
                     </button>
                     
                     <!-- Results -->
                     <div class="bg-white border-2 border-emerald-500/20 rounded-lg p-6 text-center result-container">
                         <div class="text-3xl font-bold text-[#91cb24] mb-2">2.31 tonnes CO₂e</div>
-                        <div class="text-base text-gray-600">Enter values above to calculate emissions</div>
-                        <div class="text-sm text-gray-500 mt-2">
+                        <div class="text-base text-gray-600" data-translate="calculator.defaultMessage">Enter values above to calculate emissions</div>
+                        <div class="text-sm text-gray-500 mt-2" data-translate="calculator.basedOn">
                             Based on standard emission factors
                         </div>
                     </div>
@@ -672,38 +768,38 @@
     </section>
 
     <!-- Pricing Plans Section -->
-    <section class="bg-gray-50 py-12 md:py-16 lg:py-20">
+    <section id="pricing" class="bg-gray-50 py-12 md:py-16 lg:py-20">
         <div class="px-6 md:px-12 lg:px-20">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Pricing Plans</h2>
-                <p class="text-xl text-gray-600">Choose the plan that fits your needs</p>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4" data-translate="pricing.title">Pricing Plans</h2>
+                <p class="text-xl text-gray-600" data-translate="pricing.subtitle">Choose the plan that fits your needs</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 <!-- Free Plan -->
                 <div class="bg-white border border-gray-200 rounded-2xl p-8">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Free</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4" data-translate="pricing.free.title">Free</h3>
                     <div class="flex items-baseline mb-6">
                         <span class="text-4xl font-bold text-gray-900">$0</span>
-                        <span class="text-lg font-bold text-gray-600 ml-2">/month</span>
+                        <span class="text-lg font-bold text-gray-600 ml-2" data-translate="pricing.perMonth">/month</span>
                     </div>
                     
                     <ul class="space-y-4 mb-8">
                         <li class="flex items-center">
                             <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                            <span class="text-base text-black">1,000 calculations/month</span>
+                            <span class="text-base text-black" data-translate="pricing.free.feature1">1,000 calculations/month</span>
                         </li>
                         <li class="flex items-center">
                             <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                            <span class="text-base text-black">Basic fuel types</span>
+                            <span class="text-base text-black" data-translate="pricing.free.feature2">Basic fuel types</span>
                         </li>
                         <li class="flex items-center">
                             <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                            <span class="text-base text-black">API access</span>
+                            <span class="text-base text-black" data-translate="pricing.free.feature3">API access</span>
                         </li>
                     </ul>
                     
-                    <button type="button" class="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg text-base font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Get started with free plan">
+                    <button type="button" class="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg text-base font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Get started with free plan" data-translate="cta.getStarted">
                         Get Started
                     </button>
                 </div>
@@ -712,38 +808,38 @@
                 <div class="relative">
                     <!-- Most Popular Badge -->
                     <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <div class="bg-[#95ce24] text-white px-4 py-1 rounded-full text-sm font-medium">
+                        <div class="bg-[#95ce24] text-white px-4 py-1 rounded-full text-sm font-medium" data-translate="pricing.mostPopular">
                             Most Popular
                         </div>
                     </div>
                     
                     <div class="bg-white border-2 border-[#91cb24] rounded-2xl p-8">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Pro</h3>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4" data-translate="pricing.pro.title">Pro</h3>
                         <div class="flex items-baseline mb-6">
                             <span class="text-4xl font-bold text-gray-900">$99</span>
-                            <span class="text-lg font-bold text-gray-600 ml-2">/month</span>
+                            <span class="text-lg font-bold text-gray-600 ml-2" data-translate="pricing.perMonth">/month</span>
                         </div>
                         
                         <ul class="space-y-4 mb-8">
                             <li class="flex items-center">
                                 <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                                <span class="text-base text-black">100,000 calculations/month</span>
+                                <span class="text-base text-black" data-translate="pricing.pro.feature1">100,000 calculations/month</span>
                             </li>
                             <li class="flex items-center">
                                 <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                                <span class="text-base text-black">All fuel types</span>
+                                <span class="text-base text-black" data-translate="pricing.pro.feature2">All fuel types</span>
                             </li>
                             <li class="flex items-center">
                                 <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                                <span class="text-base text-black">Advanced analytics</span>
+                                <span class="text-base text-black" data-translate="pricing.pro.feature3">Advanced analytics</span>
                             </li>
                             <li class="flex items-center">
                                 <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                                <span class="text-base text-black">Priority support</span>
+                                <span class="text-base text-black" data-translate="pricing.pro.feature4">Priority support</span>
                             </li>
                         </ul>
                         
-                        <button type="button" class="w-full bg-[#95ce24] text-white py-3 rounded-lg text-base font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Start free trial">
+                        <button type="button" class="w-full bg-[#95ce24] text-white py-3 rounded-lg text-base font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Start free trial" data-translate="cta.startFreeTrial">
                             Start Free Trial
                         </button>
                     </div>
@@ -751,29 +847,29 @@
                 
                 <!-- Enterprise Plan -->
                 <div class="bg-white border border-gray-200 rounded-2xl p-8">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Enterprise</h3>
-                    <div class="text-4xl font-bold text-gray-900 mb-6">Custom</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4" data-translate="pricing.enterprise.title">Enterprise</h3>
+                    <div class="text-4xl font-bold text-gray-900 mb-6" data-translate="pricing.custom">Custom</div>
                     
                     <ul class="space-y-4 mb-8">
                         <li class="flex items-center">
                             <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                            <span class="text-base text-black">Unlimited calculations</span>
+                            <span class="text-base text-black" data-translate="pricing.enterprise.feature1">Unlimited calculations</span>
                         </li>
                         <li class="flex items-center">
                             <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                            <span class="text-base text-black">Custom integrations</span>
+                            <span class="text-base text-black" data-translate="pricing.enterprise.feature2">Custom integrations</span>
                         </li>
                         <li class="flex items-center">
                             <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                            <span class="text-base text-black">Dedicated support</span>
+                            <span class="text-base text-black" data-translate="pricing.enterprise.feature3">Dedicated support</span>
                         </li>
                         <li class="flex items-center">
                             <img src="assets/images/img_frame.svg" alt="Check" class="w-4 h-4 mr-3" />
-                            <span class="text-base text-black">SLA guarantee</span>
+                            <span class="text-base text-black" data-translate="pricing.enterprise.feature4">SLA guarantee</span>
                         </li>
                     </ul>
                     
-                    <button type="button" class="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg text-base font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Contact sales team">
+                    <button type="button" class="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-lg text-base font-semibold hover:border-gray-400 transition-all duration-200 hover:scale-105 active:scale-95" onclick="handleButtonClick(this)" aria-label="Contact sales team" data-translate="cta.contactSales">
                         Contact Sales
                     </button>
                 </div>
@@ -781,39 +877,44 @@
         </div>
     </section>
 
+    <!-- Anchor points for navigation -->
+    <div id="docs" class="invisible h-0"></div>
+    <div id="about" class="invisible h-0"></div>
+    <div id="privacy" class="invisible h-0"></div>
+
     <!-- Footer -->
-    <footer class="bg-gray-900 pt-16 pb-8 md:py-12" role="contentinfo">
+    <footer id="contact" class="bg-gray-900 pt-16 pb-8 md:py-12" role="contentinfo">
         <div class="px-6 md:px-12 lg:px-28">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <!-- Company Info -->
                 <div class="md:col-span-1">
                     <img src="assets/images/img_div.svg" alt="ESGSyncPRO Logo" class="h-[40px] w-[280px] mb-4" />
-                    <p class="text-base text-gray-400 leading-6">Transform fuel data into actionable emission insights.</p>
+                    <p class="text-base text-gray-400 leading-6" data-translate="footer.description">Transform fuel data into actionable emission insights.</p>
                 </div>
                 
                 <!-- Product Links -->
                 <div>
-                    <h3 class="text-base font-semibold text-white mb-4">Product</h3>
+                    <h3 class="text-base font-semibold text-white mb-4" data-translate="footer.product">Product</h3>
                     <ul class="space-y-3">
-                        <li><a href="#features" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Features</a></li>
-                        <li><a href="#pricing" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Pricing</a></li>
-                        <li><a href="#docs" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Documentation</a></li>
+                        <li><a href="#features" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this); return false;" data-translate="nav.features">Features</a></li>
+                        <li><a href="#pricing" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this); return false;" data-translate="nav.pricing">Pricing</a></li>
+                        <li><a href="#docs" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this); return false;" data-translate="footer.documentation">Documentation</a></li>
                     </ul>
                 </div>
                 
                 <!-- Company Links -->
                 <div>
-                    <h3 class="text-base font-semibold text-white mb-4">Company</h3>
+                    <h3 class="text-base font-semibold text-white mb-4" data-translate="footer.company">Company</h3>
                     <ul class="space-y-3">
-                        <li><a href="#about" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">About</a></li>
-                        <li><a href="#contact" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Contact</a></li>
-                        <li><a href="#privacy" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)">Privacy Policy</a></li>
+                        <li><a href="#about" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this); return false;" data-translate="footer.about">About</a></li>
+                        <li><a href="#contact" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this); return false;" data-translate="nav.contact">Contact</a></li>
+                        <li><a href="#privacy" class="text-base text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this); return false;" data-translate="footer.privacy">Privacy Policy</a></li>
                     </ul>
                 </div>
                 
                 <!-- Social Links -->
                 <div>
-                    <h3 class="text-base font-semibold text-white mb-4">Connect</h3>
+                    <h3 class="text-base font-semibold text-white mb-4" data-translate="footer.connect">Connect</h3>
                     <div class="flex space-x-4">
                         <a href="#twitter" class="text-gray-400 hover:text-white transition-colors" onclick="handleNavigation(this)" aria-label="Follow us on Twitter">
                             <img src="assets/images/img_frame_blue_gray_300.svg" alt="Twitter" class="w-5 h-5" />
@@ -830,12 +931,362 @@
             
             <!-- Copyright -->
             <div class="border-t border-gray-800 pt-8 text-center">
-                <p class="text-base text-gray-400">© 2025 ESGSyncPRO. All rights reserved.</p>
+                <p class="text-base text-gray-400" data-translate="footer.copyright">© 2025 ESGSyncPRO. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
     <script>
+        // Translation System
+        const translations = {
+            en: {
+                // Navigation
+                "nav.home": "Home",
+                "nav.features": "Features", 
+                "nav.pricing": "Pricing",
+                "nav.docs": "Docs",
+                "nav.contact": "Contact",
+                
+                // CTA Buttons
+                "cta.getStarted": "Get Started",
+                "cta.tryDemo": "Try Demo",
+                "cta.viewDocs": "View Docs",
+                "cta.startFreeTrial": "Start Free Trial",
+                "cta.contactSales": "Contact Sales",
+                
+                // Hero Section
+                "hero.title.part1": "Transform Fuel Data into",
+                "hero.title.part2": " CO₂e KPIs",
+                "hero.subtitle": "Instantly convert fuel data into CO₂e KPIs with our advanced emission calculation platform. Accurate, scalable, and developer-friendly.",
+                
+                // Benefits Section
+                "benefits.title": "Key Benefits",
+                "benefits.subtitle": "Everything you need for accurate emission calculations",
+                "benefits.performance.title": "High Performance",
+                "benefits.performance.description": "Process millions of fuel records in seconds with our optimized calculation engine.",
+                "benefits.accuracy.title": "Pinpoint Accuracy",
+                "benefits.accuracy.description": "Industry-standard emission factors ensure precise CO₂e calculations every time.",
+                "benefits.scalability.title": "Infinite Scalability",
+                "benefits.scalability.description": "From startups to enterprises, our platform scales with your growing data needs.",
+                "benefits.api.title": "Open API",
+                "benefits.api.description": "RESTful API with comprehensive documentation for seamless integration.",
+                
+                // How It Works Section
+                "howItWorks.title": "How It Works",
+                "howItWorks.subtitle": "Three simple steps to emission insights",
+                "howItWorks.step1.title": "Upload Data",
+                "howItWorks.step1.description": "Upload your fuel consumption data via CSV, Excel, or call our API directly from your systems.",
+                "howItWorks.step2.title": "Compute Emissions",
+                "howItWorks.step2.description": "Our engine automatically calculates CO₂e values using the latest emission factors and methodologies.",
+                "howItWorks.step3.title": "Visualize & Export",
+                "howItWorks.step3.description": "Get interactive dashboards and export results in multiple formats for reporting and analysis.",
+                
+                // Calculator Section
+                "calculator.title": "Try It Now",
+                "calculator.subtitle": "Calculate emissions instantly, no signup required",
+                "calculator.fuelType": "Fuel Type",
+                "calculator.consumption": "Consumption (Liters)",
+                "calculator.consumptionPlaceholder": "1000",
+                "calculator.calculate": "Calculate CO₂e Emissions",
+                "calculator.defaultMessage": "Enter values above to calculate emissions",
+                "calculator.basedOn": "Based on standard emission factors",
+                "calculator.fuelTypes.gasoline": "Gasoline (2.31 kg CO₂e/L)",
+                "calculator.fuelTypes.diesel": "Diesel (2.68 kg CO₂e/L)",
+                "calculator.fuelTypes.naturalGas": "Natural Gas (1.87 kg CO₂e/L)",
+                "calculator.fuelTypes.propane": "Propane (1.54 kg CO₂e/L)",
+                
+                // Pricing Section
+                "pricing.title": "Pricing Plans",
+                "pricing.subtitle": "Choose the plan that fits your needs",
+                "pricing.perMonth": "/month",
+                "pricing.mostPopular": "Most Popular",
+                "pricing.custom": "Custom",
+                "pricing.free.title": "Free",
+                "pricing.free.feature1": "1,000 calculations/month",
+                "pricing.free.feature2": "Basic fuel types",
+                "pricing.free.feature3": "API access",
+                "pricing.pro.title": "Pro",
+                "pricing.pro.feature1": "100,000 calculations/month",
+                "pricing.pro.feature2": "All fuel types",
+                "pricing.pro.feature3": "Advanced analytics",
+                "pricing.pro.feature4": "Priority support",
+                "pricing.enterprise.title": "Enterprise",
+                "pricing.enterprise.feature1": "Unlimited calculations",
+                "pricing.enterprise.feature2": "Custom integrations",
+                "pricing.enterprise.feature3": "Dedicated support",
+                "pricing.enterprise.feature4": "SLA guarantee",
+                
+                // Footer
+                "footer.description": "Transform fuel data into actionable emission insights.",
+                "footer.product": "Product",
+                "footer.documentation": "Documentation",
+                "footer.company": "Company",
+                "footer.about": "About",
+                "footer.privacy": "Privacy Policy",
+                "footer.connect": "Connect",
+                "footer.copyright": "© 2025 ESGSyncPRO. All rights reserved.",
+                
+                // Language
+                "language.select": "Language"
+            },
+            
+            pl: {
+                // Navigation
+                "nav.home": "Strona główna",
+                "nav.features": "Funkcje",
+                "nav.pricing": "Cennik",
+                "nav.docs": "Dokumentacja",
+                "nav.contact": "Kontakt",
+                
+                // CTA Buttons  
+                "cta.getStarted": "Rozpocznij",
+                "cta.tryDemo": "Wypróbuj demo",
+                "cta.viewDocs": "Zobacz dokumentację",
+                "cta.startFreeTrial": "Zacznij darmowy okres próbny",
+                "cta.contactSales": "Skontaktuj się z zespołem sprzedaży",
+                
+                // Hero Section
+                "hero.title.part1": "Przekształć dane o paliwach w",
+                "hero.title.part2": " wskaźniki CO₂e",
+                "hero.subtitle": "Natychmiast konwertuj dane o paliwach na wskaźniki CO₂e dzięki naszej zaawansowanej platformie obliczania emisji. Dokładne, skalowalne i przyjazne dla programistów.",
+                
+                // Benefits Section
+                "benefits.title": "Kluczowe korzyści",
+                "benefits.subtitle": "Wszystko czego potrzebujesz do dokładnych obliczeń emisji",
+                "benefits.performance.title": "Wysoka wydajność",
+                "benefits.performance.description": "Przetwarzaj miliony rekordów paliwa w sekundach dzięki naszemu zoptymalizowanemu silnikowi obliczeniowemu.",
+                "benefits.accuracy.title": "Precyzyjna dokładność",
+                "benefits.accuracy.description": "Standardowe współczynniki emisji zapewniają precyzyjne obliczenia CO₂e za każdym razem.",
+                "benefits.scalability.title": "Nieskończona skalowalność",
+                "benefits.scalability.description": "Od startupów po przedsiębiorstwa, nasza platforma skaluje się wraz z rosnącymi potrzebami danych.",
+                "benefits.api.title": "Otwarte API",
+                "benefits.api.description": "RESTful API z kompleksową dokumentacją dla bezproblemowej integracji.",
+                
+                // How It Works Section
+                "howItWorks.title": "Jak to działa",
+                "howItWorks.subtitle": "Trzy proste kroki do wglądu w emisje",
+                "howItWorks.step1.title": "Prześlij dane",
+                "howItWorks.step1.description": "Prześlij dane o zużyciu paliwa przez CSV, Excel lub wywołaj nasze API bezpośrednio z twoich systemów.",
+                "howItWorks.step2.title": "Oblicz emisje",
+                "howItWorks.step2.description": "Nasz silnik automatycznie oblicza wartości CO₂e używając najnowszych współczynników emisji i metodologii.",
+                "howItWorks.step3.title": "Wizualizuj i eksportuj",
+                "howItWorks.step3.description": "Otrzymaj interaktywne dashboardy i eksportuj wyniki w wielu formatach do raportowania i analizy.",
+                
+                // Calculator Section
+                "calculator.title": "Wypróbuj teraz",
+                "calculator.subtitle": "Oblicz emisje natychmiast, bez rejestracji",
+                "calculator.fuelType": "Typ paliwa",
+                "calculator.consumption": "Zużycie (litry)",
+                "calculator.consumptionPlaceholder": "1000",
+                "calculator.calculate": "Oblicz emisje CO₂e",
+                "calculator.defaultMessage": "Wprowadź wartości powyżej aby obliczyć emisje",
+                "calculator.basedOn": "Na podstawie standardowych współczynników emisji",
+                "calculator.fuelTypes.gasoline": "Benzyna (2,31 kg CO₂e/L)",
+                "calculator.fuelTypes.diesel": "Diesel (2,68 kg CO₂e/L)",
+                "calculator.fuelTypes.naturalGas": "Gaz ziemny (1,87 kg CO₂e/L)",
+                "calculator.fuelTypes.propane": "Propan (1,54 kg CO₂e/L)",
+                
+                // Pricing Section
+                "pricing.title": "Plany cenowe",
+                "pricing.subtitle": "Wybierz plan dopasowany do twoich potrzeb",
+                "pricing.perMonth": "/miesiąc",
+                "pricing.mostPopular": "Najpopularniejszy",
+                "pricing.custom": "Na zamówienie",
+                "pricing.free.title": "Darmowy",
+                "pricing.free.feature1": "1000 obliczeń/miesiąc",
+                "pricing.free.feature2": "Podstawowe typy paliw",
+                "pricing.free.feature3": "Dostęp do API",
+                "pricing.pro.title": "Pro",
+                "pricing.pro.feature1": "100 000 obliczeń/miesiąc",
+                "pricing.pro.feature2": "Wszystkie typy paliw",
+                "pricing.pro.feature3": "Zaawansowane analizy",
+                "pricing.pro.feature4": "Priorytetowe wsparcie",
+                "pricing.enterprise.title": "Enterprise",
+                "pricing.enterprise.feature1": "Nieograniczone obliczenia",
+                "pricing.enterprise.feature2": "Niestandardowe integracje",
+                "pricing.enterprise.feature3": "Dedykowane wsparcie",
+                "pricing.enterprise.feature4": "Gwarancja SLA",
+                
+                // Footer
+                "footer.description": "Przekształć dane o paliwach w praktyczne wglądy w emisje.",
+                "footer.product": "Produkt",
+                "footer.documentation": "Dokumentacja",
+                "footer.company": "Firma",
+                "footer.about": "O nas",
+                "footer.privacy": "Polityka prywatności",
+                "footer.connect": "Połącz się",
+                "footer.copyright": "© 2025 ESGSyncPRO. Wszelkie prawa zastrzeżone.",
+                
+                // Language
+                "language.select": "Język"
+            }
+        };
+        
+        // Current language state
+        let currentLanguage = localStorage.getItem('esgsyncp-language') || 'en';
+        
+        // Language switching functions
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('esgsyncp-language', lang);
+            updatePageLanguage();
+            updateLanguageSelectors();
+            closeAllLanguageDropdowns();
+            
+            // Close mobile menu if open
+            if (isMobileMenuOpen) {
+                toggleMobileMenu();
+            }
+            
+            // Update calculator preview if visible
+            setTimeout(updatePreviewCalculation, 100);
+        }
+        
+        // Language dropdown functions
+        function toggleLanguageDropdown() {
+            const dropdown = document.getElementById('language-dropdown');
+            const arrow = document.getElementById('language-arrow');
+            
+            if (!dropdown || !arrow) return;
+            
+            const isVisible = dropdown.style.opacity === '1';
+            
+            if (isVisible) {
+                dropdown.style.opacity = '0';
+                dropdown.style.visibility = 'hidden';
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                dropdown.style.opacity = '1';
+                dropdown.style.visibility = 'visible';
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+        
+        function closeAllLanguageDropdowns() {
+            const dropdown = document.getElementById('language-dropdown');
+            const arrow = document.getElementById('language-arrow');
+            
+            if (dropdown && arrow) {
+                dropdown.style.opacity = '0';
+                dropdown.style.visibility = 'hidden';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Close language dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const languageSelector = document.getElementById('language-selector');
+            const languageDropdown = document.getElementById('language-dropdown');
+            
+            // Check if click is outside header language selector
+            if (languageSelector && languageDropdown && 
+                !languageSelector.contains(event.target) && 
+                !languageDropdown.contains(event.target)) {
+                const arrow = document.getElementById('language-arrow');
+                if (languageDropdown.style.opacity === '1') {
+                    languageDropdown.style.opacity = '0';
+                    languageDropdown.style.visibility = 'hidden';
+                    if (arrow) arrow.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+        
+
+        
+        function updatePageLanguage() {
+            const elements = document.querySelectorAll('[data-translate]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.textContent = translations[currentLanguage][key];
+                }
+            });
+            
+            // Update select options
+            const options = document.querySelectorAll('[data-translate-option]');
+            options.forEach(option => {
+                const key = option.getAttribute('data-translate-option');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    option.textContent = translations[currentLanguage][key];
+                }
+            });
+            
+            // Update placeholders
+            const placeholderElements = document.querySelectorAll('[data-translate-placeholder]');
+            placeholderElements.forEach(element => {
+                const key = element.getAttribute('data-translate-placeholder');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.placeholder = translations[currentLanguage][key];
+                }
+            });
+            
+
+            
+            // Update HTML lang attribute
+            document.documentElement.lang = currentLanguage;
+        }
+        
+        function updateLanguageSelectors() {
+            const languageNames = {
+                'en': 'English',
+                'pl': 'Polish'
+            };
+            
+            // Update header language selector
+            const currentLangSpan = document.getElementById('current-language');
+            const footerCurrentLangSpan = document.getElementById('footer-current-language');
+            
+            if (currentLangSpan) {
+                currentLangSpan.textContent = languageNames[currentLanguage];
+            }
+            if (footerCurrentLangSpan) {
+                footerCurrentLangSpan.textContent = languageNames[currentLanguage];
+            }
+            
+            // Update active states for all language options
+            updateLanguageOptionStates();
+        }
+        
+        function updateLanguageOptionStates() {
+            // Header dropdown options
+            const headerEnOption = document.getElementById('lang-option-en');
+            const headerPlOption = document.getElementById('lang-option-pl');
+            
+            // Mobile options
+            const mobileEnOption = document.getElementById('mobile-lang-option-en');
+            const mobilePlOption = document.getElementById('mobile-lang-option-pl');
+            
+            // Reset all options
+            const allOptions = [headerEnOption, headerPlOption, mobileEnOption, mobilePlOption];
+            allOptions.forEach(option => {
+                if (option) {
+                    option.classList.remove('bg-green-100', 'text-green-800');
+                    option.classList.add('hover:bg-gray-50');
+                }
+            });
+            
+            // Set active states
+            if (currentLanguage === 'en') {
+                if (headerEnOption) {
+                    headerEnOption.classList.add('bg-green-100', 'text-green-800');
+                    headerEnOption.classList.remove('hover:bg-gray-50');
+                }
+                if (mobileEnOption) {
+                    mobileEnOption.classList.add('bg-green-100', 'text-green-800');
+                    mobileEnOption.classList.remove('hover:bg-gray-50');
+                }
+            } else if (currentLanguage === 'pl') {
+                if (headerPlOption) {
+                    headerPlOption.classList.add('bg-green-100', 'text-green-800');
+                    headerPlOption.classList.remove('hover:bg-gray-50');
+                }
+                if (mobilePlOption) {
+                    mobilePlOption.classList.add('bg-green-100', 'text-green-800');
+                    mobilePlOption.classList.remove('hover:bg-gray-50');
+                }
+            }
+        }
+        
         // Mobile menu state
         let isMobileMenuOpen = false;
         
@@ -882,25 +1333,26 @@
             }
         }
         
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const menuButton = document.getElementById('mobile-menu-button');
-            
-            if (isMobileMenuOpen && !mobileMenu.contains(event.target) && !menuButton.contains(event.target)) {
-                toggleMobileMenu();
-            }
-        });
-        
         // Navigation handler
         function handleNavigation(element) {
             const href = element.getAttribute('href');
-            if (href.startsWith('#')) {
-                const target = document.querySelector(href);
+            if (href && href.startsWith('#')) {
+                const targetId = href.substring(1);
+                const target = document.getElementById(targetId);
                 if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
+                    // Calculate offset for fixed header
+                    const headerHeight = document.querySelector('header')?.offsetHeight || 73;
+                    const targetPosition = target.offsetTop - headerHeight - 20; // 20px extra padding
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
                 }
             }
+            
+            // Prevent default link behavior
+            return false;
         }
         
         // Mobile navigation handler (closes menu after navigation)
@@ -909,7 +1361,19 @@
             if (isMobileMenuOpen) {
                 toggleMobileMenu();
             }
+            return false;
         }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuButton = document.getElementById('mobile-menu-button');
+            
+            if (isMobileMenuOpen && mobileMenu && menuButton && 
+                !mobileMenu.contains(event.target) && !menuButton.contains(event.target)) {
+                toggleMobileMenu();
+            }
+        });
         
         // Button click handler
         function handleButtonClick(element) {
@@ -924,7 +1388,7 @@
             // Add specific functionality based on button text
         }
         
-        // Real-time calculation preview
+        // Real-time calculation preview with language support
         function updatePreviewCalculation() {
             const fuelType = document.getElementById('fuel-type')?.value;
             const consumption = parseFloat(document.getElementById('consumption')?.value);
@@ -939,7 +1403,9 @@
             
             if (!consumption || consumption <= 0 || !fuelType) {
                 resultElement.textContent = '0.00 tonnes CO₂e';
-                descriptionElement.textContent = 'Enter values above to calculate emissions';
+                // Use translation for default message
+                const defaultMessage = translations[currentLanguage]?.['calculator.defaultMessage'] || 'Enter values above to calculate emissions';
+                descriptionElement.textContent = defaultMessage;
                 return;
             }
             
@@ -948,14 +1414,25 @@
             
             resultElement.textContent = `${emissionsTonnes.toFixed(2)} tonnes CO₂e`;
             
-            const fuelTypeDisplay = {
+            const fuelTypeDisplayEn = {
                 'gasoline': 'Gasoline',
                 'diesel': 'Diesel', 
                 'natural-gas': 'Natural Gas',
                 'propane': 'Propane'
             };
             
-            descriptionElement.textContent = `Preview: ${consumption}L of ${fuelTypeDisplay[fuelType]}`;
+            const fuelTypeDisplayPl = {
+                'gasoline': 'Benzyna',
+                'diesel': 'Diesel', 
+                'natural-gas': 'Gaz ziemny',
+                'propane': 'Propan'
+            };
+            
+            const fuelTypeDisplay = currentLanguage === 'pl' ? fuelTypeDisplayPl : fuelTypeDisplayEn;
+            const previewText = currentLanguage === 'pl' ? 'Podgląd' : 'Preview';
+            const literText = currentLanguage === 'pl' ? 'L' : 'L';
+            
+            descriptionElement.textContent = `${previewText}: ${consumption}${literText} ${fuelTypeDisplay[fuelType] || fuelTypeDisplayEn[fuelType]}`;
         }
         
         // Dropdown change handler
@@ -992,7 +1469,10 @@
                 
                 // Validate input
                 if (!consumption || consumption <= 0) {
-                    alert('Please enter a valid consumption amount');
+                    const validationMessage = currentLanguage === 'pl' ? 
+                        'Proszę wprowadzić prawidłową ilość zużycia' : 
+                        'Please enter a valid consumption amount';
+                    alert(validationMessage);
                     return;
                 }
                 
@@ -1016,7 +1496,8 @@
                 if (resultElement && resultContainer) {
                  // Add loading animation
                  resultElement.style.opacity = '0.5';
-                 resultElement.textContent = 'Calculating...';
+                 const calculatingText = currentLanguage === 'pl' ? 'Obliczanie...' : 'Calculating...';
+                 resultElement.textContent = calculatingText;
                  resultElement.classList.add('calculating');
                  
                  // Simulate calculation delay for better UX
@@ -1028,13 +1509,25 @@
                     // Update description with fuel type
                     const descriptionElement = resultContainer.querySelector('.text-base.text-gray-600');
                     if (descriptionElement) {
-                        const fuelTypeDisplay = {
+                        const fuelTypeDisplayEn = {
                             'gasoline': 'Gasoline',
                             'diesel': 'Diesel',
                             'natural-gas': 'Natural Gas',
                             'propane': 'Propane'
                         };
-                        descriptionElement.textContent = `✅ Final calculation: ${consumption}L of ${fuelTypeDisplay[fuelType]}`;
+                        
+                        const fuelTypeDisplayPl = {
+                            'gasoline': 'Benzyna',
+                            'diesel': 'Diesel',
+                            'natural-gas': 'Gaz ziemny',
+                            'propane': 'Propan'
+                        };
+                        
+                        const fuelTypeDisplay = currentLanguage === 'pl' ? fuelTypeDisplayPl : fuelTypeDisplayEn;
+                        const finalCalcText = currentLanguage === 'pl' ? '✅ Obliczenie końcowe' : '✅ Final calculation';
+                        const literText = currentLanguage === 'pl' ? 'L' : 'L';
+                        
+                        descriptionElement.textContent = `${finalCalcText}: ${consumption}${literText} ${fuelTypeDisplay[fuelType] || fuelTypeDisplayEn[fuelType]}`;
                     }
                     
                     // Add visual feedback
@@ -1047,12 +1540,18 @@
                 }, 800);
             } else {
                 console.error('Result elements not found in DOM');
-                alert('Error: Could not find result display elements');
+                const elementErrorMessage = currentLanguage === 'pl' ? 
+                    'Błąd: Nie można znaleźć elementów wyników' :
+                    'Error: Could not find result display elements';
+                alert(elementErrorMessage);
             }
             
             } catch (error) {
                 console.error('Error in form submission:', error);
-                alert('An error occurred while calculating emissions. Please try again.');
+                const errorMessage = currentLanguage === 'pl' ? 
+                    'Wystąpił błąd podczas obliczania emisji. Spróbuj ponownie.' :
+                    'An error occurred while calculating emissions. Please try again.';
+                alert(errorMessage);
             }
         }
         
@@ -1066,6 +1565,10 @@
         // Initialize mobile menu and calculator on page load
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing...');
+            
+            // Initialize language system
+            updatePageLanguage();
+            updateLanguageSelectors();
             
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileMenu) {
@@ -1090,6 +1593,11 @@
             // Initialize calculator with default values
             if (consumptionInput && !consumptionInput.value) {
                 consumptionInput.value = '1000';
+                // Update placeholder with translated text
+                const placeholderKey = consumptionInput.getAttribute('data-translate-placeholder');
+                if (placeholderKey && translations[currentLanguage] && translations[currentLanguage][placeholderKey]) {
+                    consumptionInput.placeholder = translations[currentLanguage][placeholderKey];
+                }
             }
             
             // Run initial calculation
@@ -1097,7 +1605,47 @@
             
             // Initialize custom video player
             initCustomVideoPlayer();
+            
+            // Initialize Feather Icons
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+            
+            // Initialize header scroll movement
+            initHeaderScrollMovement();
         });
+        
+        // Header scroll movement
+        function initHeaderScrollMovement() {
+            const header = document.getElementById('main-header');
+            let lastScrollY = window.scrollY;
+            let ticking = false;
+            
+            function updateHeader() {
+                const currentScrollY = window.scrollY;
+                
+                // Move header with scroll
+                if (currentScrollY > 0) {
+                    // Move header up slightly as user scrolls down
+                    const translateY = Math.min(currentScrollY * 0.1, 20);
+                    header.style.transform = `translateY(-${translateY}px)`;
+                } else {
+                    header.style.transform = 'translateY(0)';
+                }
+                
+                lastScrollY = currentScrollY;
+                ticking = false;
+            }
+            
+            function requestTick() {
+                if (!ticking) {
+                    requestAnimationFrame(updateHeader);
+                    ticking = true;
+                }
+            }
+            
+            window.addEventListener('scroll', requestTick);
+        }
         
         // Custom Video Player Functions
         let video, playPauseBtn, playIcon, pauseIcon, progressBar, timeDisplay, volumeBtn, volumeIcon, muteIcon, volumeProgress;
