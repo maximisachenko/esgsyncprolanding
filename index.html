@@ -153,6 +153,7 @@
             width: 100%;
             height: 100%;
             border-radius: 16px;
+            cursor: pointer;
         }
         
         .custom-controls {
@@ -209,6 +210,11 @@
             position: relative;
             overflow: hidden;
             min-width: 60px;
+            user-select: none;
+        }
+        
+        .progress-container:hover {
+            background: rgba(255, 255, 255, 0.4);
         }
         
         .progress-bar {
@@ -246,6 +252,11 @@
             border-radius: 2px;
             cursor: pointer;
             position: relative;
+            user-select: none;
+        }
+        
+        .volume-slider:hover {
+            background: rgba(255, 255, 255, 0.4);
         }
         
         .volume-progress {
@@ -407,15 +418,18 @@
         .language-dropdown {
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease-in-out;
         }
         
         .language-option-active {
-            background-color: #dcfce7 !important; /* green-100 */
-            color: #166534 !important; /* green-800 */
+            background-color: #d1fae5 !important; /* emerald-100 */
+            color: #065f46 !important; /* emerald-800 */
         }
         
         .language-option-active:hover {
-            background-color: #dcfce7 !important;
+            background-color: #d1fae5 !important;
         }
         
         /* Mobile language selector improvements */
@@ -576,7 +590,7 @@
                         class="custom-video" 
                         loop 
                         playsinline>
-                        <source src="public/invideo-ai-1080 Demo ESG Sync PRO_ Raport ESG w 3 klikni 2025-07-19.mp4" type="video/mp4">
+                        <source id="video-source" type="video/mp4">
                         <!-- Fallback image if video doesn't load -->
                         <img src="assets/images/img_img.png" alt="ESGSyncPRO Dashboard Preview" class="hero-video-fullwidth rounded-2xl shadow-lg object-cover flex-shrink-0" />
                     </video>
@@ -1123,15 +1137,53 @@
         };
         
         // Current language state
-        let currentLanguage = localStorage.getItem('esgsyncp-language') || 'en';
+        let currentLanguage = 'en'; // Default to English
+        
+        // Initialize language from URL parameter or localStorage
+        function initializeLanguage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlLang = urlParams.get('lang');
+            
+            if (urlLang && (urlLang === 'en' || urlLang === 'pl')) {
+                currentLanguage = urlLang;
+                console.log('Language set from URL:', currentLanguage);
+            } else {
+                const storedLang = localStorage.getItem('esgsyncp-language');
+                if (storedLang && (storedLang === 'en' || storedLang === 'pl')) {
+                    currentLanguage = storedLang;
+                    console.log('Language set from localStorage:', currentLanguage);
+                } else {
+                    currentLanguage = 'en';
+                    console.log('Language set to default (English)');
+                }
+                
+                // Update URL if no language parameter is present
+                if (!urlLang) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('lang', currentLanguage);
+                    window.history.replaceState({}, '', url);
+                }
+            }
+        }
         
         // Language switching functions
         function changeLanguage(lang) {
+            console.log('Changing language to:', lang);
             currentLanguage = lang;
             localStorage.setItem('esgsyncp-language', lang);
+            
+            // Update URL with language parameter
+            const url = new URL(window.location);
+            url.searchParams.set('lang', lang);
+            window.history.pushState({}, '', url);
+            
+            // Close dropdown immediately
+            closeAllLanguageDropdowns();
+            
+            // Update page content and video
             updatePageLanguage();
             updateLanguageSelectors();
-            closeAllLanguageDropdowns();
+            setVideoSource();
             
             // Close mobile menu if open
             if (isMobileMenuOpen) {
@@ -1142,6 +1194,184 @@
             setTimeout(updatePreviewCalculation, 100);
         }
         
+        // Set video source based on current language
+        function setVideoSource() {
+            const video = document.getElementById('hero-video');
+            const videoSource = document.getElementById('video-source');
+            
+            console.log('setVideoSource called, currentLanguage:', currentLanguage);
+            console.log('Video element:', video);
+            console.log('Video source element:', videoSource);
+            
+            if (!video || !videoSource) {
+                console.error('Video or video source element not found');
+                return;
+            }
+            
+            // Pause current video
+            video.pause();
+            
+            // Set the correct video source based on language
+            if (currentLanguage === 'pl') {
+                videoSource.src = 'public/polish.mp4?t=' + Date.now();
+                console.log('Setting Polish video source: public/polish.mp4');
+            } else {
+                videoSource.src = 'public/english.mp4?t=' + Date.now();
+                console.log('Setting English video source: public/english.mp4');
+            }
+            
+            console.log('Video source set to:', videoSource.src);
+            
+            // Force video reload
+            video.load();
+            console.log('Video load() called');
+            
+            // Add visual feedback - briefly show loading state
+            const videoContainer = video.closest('.custom-video-container');
+            if (videoContainer) {
+                videoContainer.style.opacity = '0.7';
+                videoContainer.style.transition = 'opacity 0.3s ease';
+                
+                // Add loading indicator
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'video-loading-overlay';
+                loadingOverlay.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 18px;
+                    font-weight: bold;
+                    z-index: 10;
+                    border-radius: 16px;
+                `;
+                loadingOverlay.textContent = currentLanguage === 'pl' ? 'Ładowanie wideo polskiego...' : 'Loading English video...';
+                videoContainer.appendChild(loadingOverlay);
+            }
+            
+            // Wait for video to load metadata, then reinitialize player
+            video.addEventListener('loadedmetadata', function() {
+                console.log('Video metadata loaded, reinitializing player...');
+                
+                // Remove loading overlay
+                const loadingOverlay = document.getElementById('video-loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.remove();
+                }
+                
+                // Restore opacity
+                if (videoContainer) {
+                    videoContainer.style.opacity = '1';
+                }
+                
+                // Reset video to beginning but keep paused
+                video.currentTime = 0;
+                // Don't auto-play, keep video paused
+                // video.play().catch(e => console.log('Auto-play prevented:', e));
+                
+                // Reset play/pause button to play state
+                const playIcon = document.getElementById('play-icon');
+                const pauseIcon = document.getElementById('pause-icon');
+                if (playIcon && pauseIcon) {
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                    console.log('Play/pause button reset to play state');
+                }
+                
+                // Attach video event listeners
+                attachVideoEventListeners();
+                
+                initCustomVideoPlayer();
+            }, { once: true });
+            
+            // Fallback if loadedmetadata doesn't fire
+            setTimeout(() => {
+                if (video.readyState === 0) {
+                    console.log('Video not loaded, retrying...');
+                    video.load();
+                } else {
+                    console.log('Video readyState:', video.readyState);
+                    // Remove loading overlay
+                    const loadingOverlay = document.getElementById('video-loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.remove();
+                    }
+                    // Restore opacity even if metadata didn't load
+                    if (videoContainer) {
+                        videoContainer.style.opacity = '1';
+                    }
+                    
+                    // Reset play/pause button to play state
+                    const playIcon = document.getElementById('play-icon');
+                    const pauseIcon = document.getElementById('pause-icon');
+                    if (playIcon && pauseIcon) {
+                        playIcon.style.display = 'block';
+                        pauseIcon.style.display = 'none';
+                        console.log('Play/pause button reset to play state (fallback)');
+                    }
+                    
+                    // Attach video event listeners
+                    attachVideoEventListeners();
+                    
+                    initCustomVideoPlayer();
+                }
+            }, 1000);
+        }
+        
+        // Update video source based on language
+        function updateVideoSource() {
+            const video = document.getElementById('hero-video');
+            
+            if (!video) {
+                console.error('Video element not found');
+                return;
+            }
+            
+            // Store current time and playing state
+            const currentTime = video.currentTime;
+            const wasPlaying = !video.paused;
+            
+            // Remove all existing source elements
+            const existingSources = video.querySelectorAll('source');
+            existingSources.forEach(source => source.remove());
+            
+            // Create new source element based on language
+            const newSource = document.createElement('source');
+            if (currentLanguage === 'pl') {
+                newSource.src = 'public/polish.mp4?t=' + Date.now();
+                console.log('Switching to Polish video: public/polish.mp4');
+            } else {
+                newSource.src = 'public/english.mp4?t=' + Date.now();
+                console.log('Switching to English video: public/english.mp4');
+            }
+            newSource.type = 'video/mp4';
+            
+            // Insert the new source before the fallback image
+            const fallbackImg = video.querySelector('img');
+            if (fallbackImg) {
+                video.insertBefore(newSource, fallbackImg);
+            } else {
+                video.appendChild(newSource);
+            }
+            
+            // Reload video
+            video.load();
+            
+            // Restore playback state after a short delay
+            setTimeout(() => {
+                if (wasPlaying) {
+                    video.play().catch(e => console.log('Auto-play prevented:', e));
+                }
+                video.currentTime = currentTime;
+            }, 200);
+        }
+        
         // Language dropdown functions
         function toggleLanguageDropdown() {
             const dropdown = document.getElementById('language-dropdown');
@@ -1149,16 +1379,20 @@
             
             if (!dropdown || !arrow) return;
             
-            const isVisible = dropdown.style.opacity === '1';
+            const isVisible = dropdown.style.opacity === '1' && dropdown.style.visibility === 'visible';
             
             if (isVisible) {
+                // Close dropdown
                 dropdown.style.opacity = '0';
                 dropdown.style.visibility = 'hidden';
                 arrow.style.transform = 'rotate(0deg)';
+                console.log('Language dropdown closed');
             } else {
+                // Open dropdown
                 dropdown.style.opacity = '1';
                 dropdown.style.visibility = 'visible';
                 arrow.style.transform = 'rotate(180deg)';
+                console.log('Language dropdown opened');
             }
         }
         
@@ -1167,9 +1401,18 @@
             const arrow = document.getElementById('language-arrow');
             
             if (dropdown && arrow) {
+                // Force close dropdown
                 dropdown.style.opacity = '0';
                 dropdown.style.visibility = 'hidden';
+                dropdown.style.display = 'none';
                 arrow.style.transform = 'rotate(0deg)';
+                
+                // Remove any hover states
+                setTimeout(() => {
+                    dropdown.style.display = '';
+                }, 200);
+                
+                console.log('Language dropdown closed');
             }
         }
         
@@ -1260,28 +1503,28 @@
             const allOptions = [headerEnOption, headerPlOption, mobileEnOption, mobilePlOption];
             allOptions.forEach(option => {
                 if (option) {
-                    option.classList.remove('bg-green-100', 'text-green-800');
+                    option.classList.remove('bg-green-100', 'text-green-800', 'bg-emerald-100', 'text-emerald-800');
                     option.classList.add('hover:bg-gray-50');
                 }
             });
             
-            // Set active states
+            // Set active states with light green color
             if (currentLanguage === 'en') {
                 if (headerEnOption) {
-                    headerEnOption.classList.add('bg-green-100', 'text-green-800');
+                    headerEnOption.classList.add('bg-emerald-100', 'text-emerald-800');
                     headerEnOption.classList.remove('hover:bg-gray-50');
                 }
                 if (mobileEnOption) {
-                    mobileEnOption.classList.add('bg-green-100', 'text-green-800');
+                    mobileEnOption.classList.add('bg-emerald-100', 'text-emerald-800');
                     mobileEnOption.classList.remove('hover:bg-gray-50');
                 }
             } else if (currentLanguage === 'pl') {
                 if (headerPlOption) {
-                    headerPlOption.classList.add('bg-green-100', 'text-green-800');
+                    headerPlOption.classList.add('bg-emerald-100', 'text-emerald-800');
                     headerPlOption.classList.remove('hover:bg-gray-50');
                 }
                 if (mobilePlOption) {
-                    mobilePlOption.classList.add('bg-green-100', 'text-green-800');
+                    mobilePlOption.classList.add('bg-emerald-100', 'text-emerald-800');
                     mobilePlOption.classList.remove('hover:bg-gray-50');
                 }
             }
@@ -1566,9 +1809,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing...');
             
-            // Initialize language system
+            // Initialize language system first
+            initializeLanguage();
             updatePageLanguage();
             updateLanguageSelectors();
+            setVideoSource();
+            ensureLanguageDropdownClosed();
             
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileMenu) {
@@ -1664,6 +1910,13 @@
             
             if (!video) return;
             
+            // Initialize play/pause button state
+            if (playIcon && pauseIcon) {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+                console.log('Play/pause button initialized to play state');
+            }
+            
             // Update progress bar and time display
             video.addEventListener('timeupdate', updateProgress);
             video.addEventListener('loadedmetadata', updateTimeDisplay);
@@ -1675,6 +1928,13 @@
             // Set initial volume
             video.volume = 1;
             updateVolumeDisplay();
+            
+            // Attach video event listeners
+            attachVideoEventListeners();
+            
+            // Initialize drag functionality
+            initVolumeSlider();
+            initProgressSlider();
         }
         
         function togglePlayPause() {
@@ -1726,6 +1986,47 @@
             video.currentTime = newTime;
         }
         
+        // Progress bar drag functionality
+        function initProgressSlider() {
+            const progressContainer = document.querySelector('.progress-container');
+            if (!progressContainer) return;
+            
+            let isDragging = false;
+            
+            function updateProgressFromEvent(event) {
+                if (!video || !progressContainer) return;
+                
+                const rect = progressContainer.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const width = progressContainer.offsetWidth;
+                const newTime = (clickX / width) * video.duration;
+                
+                video.currentTime = Math.max(0, Math.min(video.duration, newTime));
+            }
+            
+            // Mouse events for dragging
+            progressContainer.addEventListener('mousedown', function(event) {
+                isDragging = true;
+                updateProgressFromEvent(event);
+                event.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', function(event) {
+                if (isDragging) {
+                    updateProgressFromEvent(event);
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
+            
+            // Click event for direct progress setting
+            progressContainer.addEventListener('click', function(event) {
+                updateProgressFromEvent(event);
+            });
+        }
+        
         function toggleMute() {
             if (!video) return;
             
@@ -1760,6 +2061,49 @@
             updateVolumeDisplay();
         }
         
+        // Volume slider drag functionality
+        function initVolumeSlider() {
+            const volumeSlider = document.querySelector('.volume-slider');
+            if (!volumeSlider) return;
+            
+            let isDragging = false;
+            
+            function updateVolumeFromEvent(event) {
+                if (!video || !volumeSlider) return;
+                
+                const rect = volumeSlider.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const width = volumeSlider.offsetWidth;
+                const newVolume = Math.max(0, Math.min(1, clickX / width));
+                
+                video.volume = newVolume;
+                video.muted = false;
+                updateVolumeDisplay();
+            }
+            
+            // Mouse events for dragging
+            volumeSlider.addEventListener('mousedown', function(event) {
+                isDragging = true;
+                updateVolumeFromEvent(event);
+                event.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', function(event) {
+                if (isDragging) {
+                    updateVolumeFromEvent(event);
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
+            
+            // Click event for direct volume setting
+            volumeSlider.addEventListener('click', function(event) {
+                updateVolumeFromEvent(event);
+            });
+        }
+        
         function toggleFullscreen() {
             if (!video) return;
             
@@ -1775,6 +2119,51 @@
                     container.msRequestFullscreen();
                 }
             }
+        }
+        
+        // Handle browser back/forward navigation
+        window.addEventListener('popstate', function() {
+            console.log('URL changed, reinitializing language...');
+            initializeLanguage();
+            updatePageLanguage();
+            updateLanguageSelectors();
+            setVideoSource();
+        });
+        
+        // Ensure language dropdown is closed on page load
+        function ensureLanguageDropdownClosed() {
+            const dropdown = document.getElementById('language-dropdown');
+            const arrow = document.getElementById('language-arrow');
+            
+            if (dropdown && arrow) {
+                dropdown.style.opacity = '0';
+                dropdown.style.visibility = 'hidden';
+                arrow.style.transform = 'rotate(0deg)';
+                console.log('Language dropdown closed on page load');
+            }
+        }
+        
+        // Initialize mobile menu and calculator on page load
+        
+        // Attach video event listeners
+        function attachVideoEventListeners() {
+            const video = document.getElementById('hero-video');
+            if (!video) return;
+            
+            // Remove existing click listeners by removing and re-adding the event
+            video.removeEventListener('click', videoClickHandler);
+            
+            // Add click event to video for play/pause
+            video.addEventListener('click', videoClickHandler);
+            
+            console.log('Video click event listener attached');
+        }
+        
+        // Set video source based on current language
+        
+        // Video click handler function
+        function videoClickHandler() {
+            togglePlayPause();
         }
     </script>
 <script id="dhws-dataInjector" src="public/dhws-data-injector.js"></script>
