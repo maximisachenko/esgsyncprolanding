@@ -92,6 +92,11 @@
         /* Footer spacing */
         .pt-16 { padding-top: 4rem; }
         .pb-8 { padding-bottom: 2rem; }
+
+        /* Missing Tailwind-like margin-top utilities (ensure these work) */
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-10 { margin-top: 2.5rem; }
         
         /* Ensure mobile menu is hidden on desktop */
         @media (min-width: 1024px) {
@@ -443,6 +448,9 @@
                 background-color: rgba(0, 0, 0, 0.05);
             }
         }
+        
+		/* Typing animation removed */
+		.typing-headline, #typing-text, #typing-text-line1, #typing-text-line2, .typing-caret { display: none !important; }
     </style>
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fmaximisach2862back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.5"></script>
 </head>
@@ -896,6 +904,45 @@
     <div id="about" class="invisible h-0"></div>
     <div id="privacy" class="invisible h-0"></div>
 
+    <!-- Email capture / ESG assessment CTA -->
+    <section id="esg-email" class="py-20 md:py-24 bg-gradient-to-b from-white to-gray-50">
+        <div class="px-6 md:px-12 lg:px-28">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 mb-4">
+                    ESGSyncPRO
+                </div>
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4" data-translate="esgEmail.headline">
+                    Your ESG report ready in 24 hours – without chaos or stress
+                </h2>
+                <p id="esg-subtitle" class="text-base md:text-xl text-gray-600 leading-relaxed mb-8" data-translate="esgEmail.subtitle">
+                    Answer 26 questions → get a personalized PDF with a benchmark in 24h. No commitment.
+                </p>
+                <form id="lead-form" class="flex flex-col sm:flex-row items-stretch gap-3 justify-center max-w-3xl mx-auto" method="POST" target="lead-target">
+                    <input 
+                        id="lead-email" 
+                        name="email" 
+                        type="email" 
+                        autocomplete="email"
+                        required
+                        data-translate-placeholder="esgEmail.emailPlaceholder"
+                        placeholder="Email address"
+                        class="flex-1 min-w-0 border border-gray-200 bg-white rounded-xl px-4 py-3 md:py-4 text-base md:text-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#91cb24] focus:border-[#91cb24] shadow-sm" />
+                    <button 
+                        id="lead-submit"
+                        type="submit" 
+                        class="whitespace-nowrap bg-[#95ce24] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl text-base md:text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm">
+                        <span data-translate="esgEmail.cta">Start ESG assessment</span>
+                    </button>
+                </form>
+                <iframe name="lead-target" id="lead-target" style="display:none"></iframe>
+                <div class="text-[11px] md:text-xs text-gray-500 mt-10">
+                    <span data-translate="esgEmail.disclaimer">You can unsubscribe at any time (STOP).</span> <a href="#privacy" class="underline" data-translate="footer.privacy">Privacy Policy</a>.
+                </div>
+                <div id="lead-feedback" class="hidden text-sm md:text-base mt-4"></div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer id="contact" class="bg-gray-900 pt-16 pb-8 md:py-12" role="contentinfo">
         <div class="px-6 md:px-12 lg:px-28">
@@ -1030,6 +1077,19 @@
                 "pricing.enterprise.feature3": "Dedicated support",
                 "pricing.enterprise.feature4": "SLA guarantee",
                 
+                // Email CTA (ESG)
+                "esgEmail.headline": "Your ESG report ready in 24 hours – without chaos or stress",
+                "esgEmail.subtitle": "Answer 26 questions → get a personalized PDF with a benchmark in 24h. No commitment.",
+                "esgEmail.cta": "Start ESG assessment",
+                "esgEmail.emailPlaceholder": "Email address",
+                "esgEmail.disclaimer": "You can unsubscribe at any time (STOP).",
+                "esgEmail.button.sending": "Sending...",
+                "esgEmail.button.sent": "Sent",
+                "esgEmail.validation.invalidEmail": "Enter a valid email address.",
+                "esgEmail.endpointNotConfigured": "Endpoint is not configured. Please contact support.",
+                "esgEmail.successMessage": "Done! Check your inbox — we’ve sent a link to your report.",
+                "esgEmail.errorMessage": "Failed to save the address. Please try again.",
+
                 // Footer
                 "footer.description": "Transform fuel data into actionable emission insights.",
                 "footer.product": "Product",
@@ -1121,6 +1181,19 @@
                 "pricing.enterprise.feature3": "Dedykowane wsparcie",
                 "pricing.enterprise.feature4": "Gwarancja SLA",
                 
+                // Email CTA (ESG)
+                "esgEmail.headline": "Twój raport ESG gotowy w 24 godziny – bez chaosu i nerwów",
+                "esgEmail.subtitle": "Wypełnij 26 pytań → otrzymaj personalizowany PDF z benchmarkiem w 24h. Zero zobowiązań.",
+                "esgEmail.cta": "Rozpocznij ocenę ESG",
+                "esgEmail.emailPlaceholder": "Adres e‑mail",
+                "esgEmail.disclaimer": "Możesz zrezygnować w każdej chwili (STOP).",
+                "esgEmail.button.sending": "Wysyłanie...",
+                "esgEmail.button.sent": "Wysłano",
+                "esgEmail.validation.invalidEmail": "Wprowadź poprawny adres e‑mail.",
+                "esgEmail.endpointNotConfigured": "Endpoint nie jest skonfigurowany. Skontaktuj się z administratorem.",
+                "esgEmail.successMessage": "Gotowe! Sprawdź pocztę — wysłaliśmy link do Twojego raportu.",
+                "esgEmail.errorMessage": "Nie udało się zapisać adresu. Spróbuj ponownie.",
+
                 // Footer
                 "footer.description": "Przekształć dane o paliwach w praktyczne wglądy w emisje.",
                 "footer.product": "Produkt",
@@ -2165,6 +2238,216 @@
         function videoClickHandler() {
             togglePlayPause();
         }
+    </script>
+    <script>
+        (function() {
+            const HEADLINE_BY_LANG = {
+                en: 'Your ESG report ready in 24 hours – without chaos or stress',
+                pl: 'Twój raport ESG gotowy w 24 godziny – bez chaosu i nerwów'
+            };
+            const ENABLE_TYPING_ANIMATION = false; // typing disabled globally
+            const SPLIT_DELIMITER = ' – ';
+            const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwjq8xS20XeRs86XQItkLdoiawI-yvOxQCGhZ7urBv_MUE3tjH8eNu6JeiVse_DAw1o/exec';
+
+            let typingTimers = [];
+            function clearTypingTimers() {
+                typingTimers.forEach(id => clearTimeout(id));
+                typingTimers = [];
+            }
+            function startTypingEffect() {
+                let line1 = document.getElementById('typing-text-line1');
+                let line2 = document.getElementById('typing-text-line2');
+                const single = document.getElementById('typing-text');
+                const caret = document.querySelector('.typing-caret');
+                // Support both old two-line and new single-line markup
+                const useSingle = !!single;
+                if (useSingle) { return; }
+                if (!line1) return;
+                clearTypingTimers();
+                const runCycle = () => {
+                    line1.textContent = '';
+                    if (line2) line2.textContent = '';
+                    const full = (typeof currentLanguage !== 'undefined' && HEADLINE_BY_LANG[currentLanguage]) ? HEADLINE_BY_LANG[currentLanguage] : HEADLINE_BY_LANG.en;
+                    const parts = full.split(/\s[–—-]\s/);
+                    let first = parts[0] || full;
+                    let second = parts.slice(1).join(' – ') || '';
+                    if (!second && first.length > 36) {
+                        // Fallback split near middle on long headline if no dash delimiter found
+                        const mid = Math.floor(first.length / 2);
+                        const leftSpace = first.lastIndexOf(' ', mid + 8);
+                        const rightSpace = first.indexOf(' ', mid);
+                        const splitAt = leftSpace > 24 ? leftSpace : (rightSpace > -1 ? rightSpace : mid);
+                        second = first.slice(splitAt + 1);
+                        first = first.slice(0, splitAt);
+                    }
+                    const disableTyping = !ENABLE_TYPING_ANIMATION || window.matchMedia('(max-width: 640px)').matches;
+                    if (disableTyping) {
+                        line1.textContent = useSingle ? full : first;
+                        if (line2) line2.textContent = second;
+                        if (caret) caret.style.display = 'none';
+                        return;
+                    } else if (caret) {
+                        caret.style.display = '';
+                    }
+                    let i1 = 0;
+                    let i2 = 0;
+                    // Fallback: if nothing typed within 1.2s, show full text
+                    typingTimers.push(setTimeout(() => {
+                        if (line1.textContent.length === 0 && (!line2 || line2.textContent.length === 0)) {
+                            line1.textContent = useSingle ? full : first;
+                            if (line2) line2.textContent = second;
+                        }
+                    }, 1200));
+                    const typeOne = () => {
+                        if (useSingle) {
+                            if (i1 < full.length) {
+                                line1.textContent += full.charAt(i1++);
+                                typingTimers.push(setTimeout(typeOne, 24));
+                                return;
+                            }
+                            typingTimers.push(setTimeout(eraseOne, 5000));
+                            return;
+                        }
+                        if (i1 < first.length) {
+                            line1.textContent += first.charAt(i1++);
+                            typingTimers.push(setTimeout(typeOne, 24));
+                            return;
+                        }
+                        if (line2 && i2 < second.length) {
+                            line2.textContent += second.charAt(i2++);
+                            typingTimers.push(setTimeout(typeOne, 24));
+                            return;
+                        }
+                        // Wait 5 seconds then erase
+                        typingTimers.push(setTimeout(eraseOne, 5000));
+                    };
+                    const eraseOne = () => {
+                        if (useSingle) {
+                            if (line1.textContent.length > 0) {
+                                line1.textContent = line1.textContent.slice(0, -1);
+                                if (i1 > 0) i1--;
+                                typingTimers.push(setTimeout(eraseOne, 12));
+                            } else {
+                                typingTimers.push(setTimeout(runCycle, 300));
+                            }
+                            return;
+                        }
+                        if (line2 && line2.textContent.length > 0) {
+                            line2.textContent = line2.textContent.slice(0, -1);
+                            if (i2 > 0) i2--;
+                            typingTimers.push(setTimeout(eraseOne, 12));
+                        } else if (line1.textContent.length > 0) {
+                            line1.textContent = line1.textContent.slice(0, -1);
+                            if (i1 > 0) i1--;
+                            typingTimers.push(setTimeout(eraseOne, 12));
+                        } else {
+                            // Loop
+                            typingTimers.push(setTimeout(runCycle, 300));
+                        }
+                    };
+                    typeOne();
+                };
+                runCycle();
+            }
+
+            function generateRandomLink() {
+                const randomId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+                return 'https://example.com/raport/' + randomId;
+            }
+
+            // Deprecated network submission via fetch (CORS). Using native form POST instead.
+            async function submitLead(email) { return { ok: true }; }
+
+            function t(key, fallback = '') {
+                return (translations[currentLanguage] && translations[currentLanguage][key]) || fallback || key;
+            }
+
+            function setFeedback(message, type) {
+                const box = document.getElementById('lead-feedback');
+                if (!box) return;
+                box.classList.remove('hidden');
+                box.textContent = message;
+                box.className = 'mt-4 text-sm md:text-base ' + (type === 'success' ? 'text-green-700' : 'text-red-700');
+            }
+
+            function validateEmail(email) {
+                return /^(?:[A-Z0-9._%+-]+)@(?:[A-Z0-9-]+\.)+[A-Z]{2,}$/i.test(email);
+            }
+
+            function initLeadForm() {
+                const form = document.getElementById('lead-form');
+                const input = document.getElementById('lead-email');
+                const submitBtn = document.getElementById('lead-submit');
+                if (!form || !input || !submitBtn) return;
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = input.value.trim();
+                    if (!validateEmail(email)) {
+                        setFeedback(t('esgEmail.validation.invalidEmail', 'Enter a valid email address.'), 'error');
+                        input.focus();
+                        return;
+                    }
+                    if (!GOOGLE_APPS_SCRIPT_WEB_APP_URL || GOOGLE_APPS_SCRIPT_WEB_APP_URL.includes('REPLACE_ME')) {
+                        setFeedback(t('esgEmail.endpointNotConfigured', 'Endpoint is not configured. Please contact support.'), 'error');
+                        return;
+                    }
+                    // Build native form submission to avoid CORS (posts into hidden iframe)
+                    form.action = GOOGLE_APPS_SCRIPT_WEB_APP_URL;
+                    form.method = 'POST';
+                    form.target = 'lead-target';
+
+                    // Ensure hidden fields exist
+                    const ensureHidden = (name, value) => {
+                        let el = form.querySelector('input[type="hidden"][name="' + name + '"]');
+                        if (!el) {
+                            el = document.createElement('input');
+                            el.type = 'hidden';
+                            el.name = name;
+                            form.appendChild(el);
+                        }
+                        el.value = value;
+                    };
+                    ensureHidden('source', 'landing-esgsyncpro');
+                    ensureHidden('submittedAt', new Date().toISOString());
+                    ensureHidden('randomLink', generateRandomLink());
+                    ensureHidden('userAgent', navigator.userAgent || '');
+
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = t('esgEmail.button.sending', 'Sending...');
+                    // Submit natively; cannot read response due to cross-origin, so optimistically show success
+                    form.submit();
+                    setTimeout(() => {
+                        setFeedback(t('esgEmail.successMessage', 'Done! Check your inbox — we’ve sent a link to your report.'), 'success');
+                        form.reset();
+                        submitBtn.textContent = t('esgEmail.button.sent', 'Sent');
+                    }, 600);
+                });
+            }
+
+            let bootstrapped = false;
+            function bootstrapOnce() {
+                if (bootstrapped) return;
+                bootstrapped = true;
+                startTypingEffect();
+                initLeadForm();
+            }
+            document.addEventListener('DOMContentLoaded', bootstrapOnce);
+            if (document.readyState !== 'loading') {
+                // In case the script is executed after DOMContentLoaded
+                bootstrapOnce();
+            }
+
+            // Re-run typing effect and update subtitle/cta/disclaimer on language change
+            const originalChangeLanguage = typeof changeLanguage === 'function' ? changeLanguage : null;
+            if (originalChangeLanguage) {
+                window.changeLanguage = function(lang) {
+                    originalChangeLanguage(lang);
+                    // After translations update, restart typing loop with new language
+                    setTimeout(startTypingEffect, 50);
+                }
+            }
+        })();
     </script>
 <script id="dhws-dataInjector" src="public/dhws-data-injector.js"></script>
 </body>
