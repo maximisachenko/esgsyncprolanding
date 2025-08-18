@@ -105,6 +105,57 @@
             }
         }
         
+        /* Modal (survey) */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background: #fff;
+            width: 100%;
+            max-width: 860px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .modal-body { padding: 20px; max-height: 75vh; overflow: auto; }
+        .modal-footer { padding: 16px 20px; border-top: 1px solid #eee; display: flex; gap: 12px; justify-content: flex-end; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; padding: 10px 16px; font-weight: 600; transition: transform .15s ease, background .2s ease; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: #95ce24; color: #fff; }
+        .btn-primary:hover { background: #7fb01f; }
+        .btn-secondary { background: #f3f4f6; color: #111827; }
+        .btn-secondary:hover { background: #e5e7eb; }
+        .q-group { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-top: 16px; }
+        .q-title { font-weight: 700; color: #111827; margin-bottom: 8px; }
+        .q-sub { color: #6b7280; margin-top: 4px; }
+        .q-row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 640px) { .q-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .q-field { display: flex; flex-direction: column; gap: 8px; }
+        .q-field label { font-size: 14px; color: #374151; }
+        .q-radio-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        .q-radio-row label { display: inline-flex; align-items: center; gap: 8px; background: #f9fafb; padding: 8px 10px; border-radius: 8px; border: 1px solid #e5e7eb; cursor: pointer; }
+        .q-radio-row input { accent-color: #95ce24; }
+        .q-select, .q-input, .q-textarea { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+        .q-textarea { min-height: 90px; resize: vertical; }
+        .result-box { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background: #fafafa; }
+        .result-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 640px) { .result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        
         /* Calculator result animations */
         .result-container {
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -449,10 +500,30 @@
             }
         }
         
-		/* Typing animation removed */
-		.typing-headline, #typing-text, #typing-text-line1, #typing-text-line2, .typing-caret { display: none !important; }
+		/* Typing headline styles */
+		.typing-headline { display: block; position: relative; }
+		.typing-caret { display: inline-block; width: 1px; height: 1em; background:#111827; animation: blink 1s step-end infinite; vertical-align: baseline; margin-left:2px; }
+		@keyframes blink { 50% { opacity: 0; } }
     </style>
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fmaximisach2862back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.5"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- Typed.js for headline typing -->
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js"></script>
+<script>
+// Fallback loader if primary CDN blocked by SRI or network
+window.addEventListener('DOMContentLoaded', function() {
+    try {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            var s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+            s.crossOrigin = 'anonymous';
+            document.head.appendChild(s);
+        }
+    } catch (e) {}
+});
+</script>
 </head>
 <body class="bg-white font-inter">
     <!-- Header -->
@@ -911,8 +982,8 @@
                 <div class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 mb-4">
                     ESGSyncPRO
                 </div>
-                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4" data-translate="esgEmail.headline">
-                    Your ESG report ready in 24 hours – without chaos or stress
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4 typing-headline">
+                    <span id="typed-headline"></span><span class="typing-caret"></span>
                 </h2>
                 <p id="esg-subtitle" class="text-base md:text-xl text-gray-600 leading-relaxed mb-8" data-translate="esgEmail.subtitle">
                     Answer 26 questions → get a personalized PDF with a benchmark in 24h. No commitment.
@@ -942,6 +1013,278 @@
             </div>
         </div>
     </section>
+
+    <!-- Survey Modal -->
+    <div id="survey-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-content" role="document">
+            <div class="modal-header">
+                <div class="text-lg font-bold text-gray-900" data-translate="survey.title">Szybka ocena ESG</div>
+                <button id="survey-close" class="btn btn-secondary" type="button" data-translate="survey.buttons.close">Zamknij</button>
+            </div>
+            <div class="modal-body">
+                <div id="survey-step-consent" class="q-group">
+                    <div class="q-title" data-translate="survey.consent.title">Czy chcesz przejść szybki test ESG?</div>
+                    <div class="q-sub" data-translate="survey.consent.subtitle">Zajmie ~3–5 minut. Po zakończeniu zobaczysz wynik i benchmark.</div>
+                    <div class="mt-4" style="display:flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" id="survey-start" class="btn btn-primary" data-translate="survey.buttons.yesStart">Tak, rozpocznij</button>
+                        <button type="button" id="survey-skip" class="btn btn-secondary" data-translate="survey.buttons.noLater">Nie teraz</button>
+                    </div>
+                </div>
+
+                <form id="survey-form" style="display:none;">
+                    <!-- 1. Profil firmy (no points) -->
+                    <div class="q-group">
+                        <div class="q-title" data-translate="survey.sections.profile.title">1. Profil firmy</div>
+                        <div class="q-row">
+                            <div class="q-field">
+                                <label data-translate="survey.profile.industry">Branża</label>
+                                <select class="q-select" name="industry">
+                                    <option value="manufacturing" data-translate-option="survey.profile.industry.options.manufacturing">Produkcja</option>
+                                    <option value="services" data-translate-option="survey.profile.industry.options.services">Usługi</option>
+                                    <option value="it" data-translate-option="survey.profile.industry.options.it">IT / Software</option>
+                                    <option value="retail" data-translate-option="survey.profile.industry.options.retail">Handel</option>
+                                    <option value="transport" data-translate-option="survey.profile.industry.options.transport">Transport / Logistyka</option>
+                                    <option value="other" data-translate-option="survey.profile.industry.options.other">Inna</option>
+                                </select>
+                            </div>
+                            <div class="q-field">
+                                <label data-translate="survey.profile.employees">Liczba pracowników</label>
+                                <select class="q-select" name="employees">
+                                    <option data-translate-option="survey.profile.employees.options.1_10">1–10</option>
+                                    <option data-translate-option="survey.profile.employees.options.11_50">11–50</option>
+                                    <option data-translate-option="survey.profile.employees.options.51_250">51–250</option>
+                                    <option data-translate-option="survey.profile.employees.options.251_500">251–500</option>
+                                    <option data-translate-option="survey.profile.employees.options.500_plus">500+</option>
+                                </select>
+                            </div>
+                            <div class="q-field">
+                                <label data-translate="survey.profile.country">Kraj głównych operacji</label>
+                                <input class="q-input" id="country-input" name="country" data-translate-placeholder="survey.profile.country" placeholder="Polska" readonly />
+                                <div class="country-dropdown" id="country-dropdown" style="display:none; position:relative;">
+                                    <div id="country-list" style="position:absolute; z-index:20; background:#fff; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.1); max-height:240px; overflow:auto; width:100%;"></div>
+                                </div>
+                            </div>
+                            <div class="q-field">
+                                <label data-translate="survey.profile.revenue">Roczny przychód</label>
+                                <select class="q-select" name="revenue">
+                                    <option data-translate-option="survey.profile.revenue.options.lt1">< 1 mln EUR</option>
+                                    <option data-translate-option="survey.profile.revenue.options.1_10">1–10 mln EUR</option>
+                                    <option data-translate-option="survey.profile.revenue.options.10_50">10–50 mln EUR</option>
+                                    <option data-translate-option="survey.profile.revenue.options.50_250">50–250 mln EUR</option>
+                                    <option data-translate-option="survey.profile.revenue.options.250_plus">250 mln EUR+</option>
+                                </select>
+                            </div>
+                            <div class="q-field">
+                                <label data-translate="survey.profile.csrd">Podleganie obowiązkowi CSRD</label>
+                                <select class="q-select" name="csrd">
+                                    <option data-translate-option="survey.profile.csrd.options.yes">Tak</option>
+                                    <option data-translate-option="survey.profile.csrd.options.no">Nie</option>
+                                    <option data-translate-option="survey.profile.csrd.options.unknown">Nie wiem</option>
+                                </select>
+                            </div>
+                            <div class="q-field">
+                                <label data-translate="survey.profile.level">Raportowanie na poziomie</label>
+                                <select class="q-select" name="scopeLevel">
+                                    <option data-translate-option="survey.profile.level.options.single">Pojedynczej jednostki</option>
+                                    <option data-translate-option="survey.profile.level.options.group">Grupy kapitałowej</option>
+                                    <option data-translate-option="survey.profile.level.options.both">Oba</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. E (25 pts) -->
+                    <div class="q-group">
+                        <div class="q-title" data-translate="survey.sections.e.title">2. Środowisko (E) — max 25 pkt</div>
+                        <div class="q-field">
+                            <label data-translate="survey.e.energy">Czy monitorujesz zużycie energii?</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="e_energy" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="e_energy" value="3"> <span data-translate="survey.opt.partial_3">Częściowo (3)</span></label>
+                                <label><input type="radio" name="e_energy" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.e.co2">Czy monitorujesz emisje CO₂ / ślad węglowy?</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="e_co2" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="e_co2" value="3"> <span data-translate="survey.opt.partial_3">Częściowo (3)</span></label>
+                                <label><input type="radio" name="e_co2" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.e.scopes">Zakresy emisji w raportowaniu</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="e_scopes" value="5"> <span data-translate="survey.opt.scopes_123_5">Scope 1, 2 i 3 (5)</span></label>
+                                <label><input type="radio" name="e_scopes" value="3"> <span data-translate="survey.opt.scopes_12_3">Scope 1 i 2 (3)</span></label>
+                                <label><input type="radio" name="e_scopes" value="1"> <span data-translate="survey.opt.scopes_1_1">Scope 1 (1)</span></label>
+                                <label><input type="radio" name="e_scopes" value="0"> <span data-translate="survey.opt.scopes_none_0">Żaden (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.e.ren">Udział OZE w zużyciu (%)</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="e_res" value="5"> <span data-translate="survey.opt.ren_50_100_5">50–100% (5)</span></label>
+                                <label><input type="radio" name="e_res" value="3"> <span data-translate="survey.opt.ren_20_49_3">20–49% (3)</span></label>
+                                <label><input type="radio" name="e_res" value="1"> <span data-translate="survey.opt.ren_1_19_1">1–19% (1)</span></label>
+                                <label><input type="radio" name="e_res" value="0"> <span data-translate="survey.opt.ren_0_0">0% (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.e.policy">Czy masz formalną politykę środowiskową?</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="e_policy" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="e_policy" value="3"> <span data-translate="survey.opt.inprogress_3">W trakcie tworzenia (3)</span></label>
+                                <label><input type="radio" name="e_policy" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. S (25 pts) -->
+                    <div class="q-group">
+                        <div class="q-title" data-translate="survey.sections.s.title">3. Społeczne (S) — max 25 pkt</div>
+                        <div class="q-field">
+                            <label data-translate="survey.s.dei">Polityka DEI</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="s_dei" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="s_dei" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.s.hr">Raportowanie danych HR</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="s_hr" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="s_hr" value="3"> <span data-translate="survey.opt.partial_3">Częściowo (3)</span></label>
+                                <label><input type="radio" name="s_hr" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.s.whistle">Whistleblowing</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="s_whistle" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="s_whistle" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.s.incidents">Monitorowanie wypadkowości</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="s_incidents" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="s_incidents" value="3"> <span data-translate="survey.opt.partial_3">W planach (3)</span></label>
+                                <label><input type="radio" name="s_incidents" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.s.training">Średnia liczba godzin szkoleń / prac.</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="s_training" value="5"> <span data-translate="survey.opt.training_21_5">21+ (5)</span></label>
+                                <label><input type="radio" name="s_training" value="3"> <span data-translate="survey.opt.training_11_20_3">11–20 (3)</span></label>
+                                <label><input type="radio" name="s_training" value="1"> <span data-translate="survey.opt.training_1_10_1">1–10 (1)</span></label>
+                                <label><input type="radio" name="s_training" value="0"> <span data-translate="survey.opt.training_0_0">0 (0)</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. G (20 pts) -->
+                    <div class="q-group">
+                        <div class="q-title" data-translate="survey.sections.g.title">4. Ład korporacyjny (G) — max 20 pkt</div>
+                        <div class="q-field">
+                            <label data-translate="survey.g.risk">Regularna ocena ryzyk ESG przez zarząd</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="g_risk" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="g_risk" value="3"> <span data-translate="survey.opt.dontknow_3">Nie wiem (3)</span></label>
+                                <label><input type="radio" name="g_risk" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.g.pay">Powiązanie wynagrodzeń z KPI ESG</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="g_pay" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="g_pay" value="3"> <span data-translate="survey.opt.partial_3">W planach (3)</span></label>
+                                <label><input type="radio" name="g_pay" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.g.owner">Formalny właściciel/komitet ESG</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="g_owner" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="g_owner" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.g.qc">Kontrole jakości danych ESG</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="g_qc" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="g_qc" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Supply (15 pts) -->
+                    <div class="q-group">
+                        <div class="q-title" data-translate="survey.sections.sup.title">5. Łańcuch dostaw i dane — max 15 pkt</div>
+                        <div class="q-field">
+                            <label data-translate="survey.sup.count">Ilu masz dostawców? (liczba)</label>
+                            <input class="q-input" name="sup_count" type="number" min="0" placeholder="np. 42" />
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.sup.coverage">% kluczowych dostawców objętych oceną ESG</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="sup_coverage" value="5"> <span data-translate="survey.opt.perc_75_5">75% (5)</span></label>
+                                <label><input type="radio" name="sup_coverage" value="3"> <span data-translate="survey.opt.perc_25_75_3">25–75% (3)</span></label>
+                                <label><input type="radio" name="sup_coverage" value="1"> <span data-translate="survey.opt.perc_lt25_1"><25% (1)</span></label>
+                                <label><input type="radio" name="sup_coverage" value="0"> <span data-translate="survey.opt.perc_0_0">0% (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.sup.collect">Zbieranie danych od dostawców</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="sup_collect" value="5"> <span data-translate="survey.opt.yes_5">Tak (5)</span></label>
+                                <label><input type="radio" name="sup_collect" value="3"> <span data-translate="survey.opt.partial_3">Częściowo (3)</span></label>
+                                <label><input type="radio" name="sup_collect" value="0"> <span data-translate="survey.opt.no_0">Nie (0)</span></label>
+                            </div>
+                        </div>
+                        <div class="q-field">
+                            <label data-translate="survey.sup.freq">Częstotliwość zbierania danych ESG</label>
+                            <div class="q-radio-row">
+                                <label><input type="radio" name="sup_freq" value="5"> <span data-translate="survey.opt.freq_cont_5">Ciągle / bieżąco (5)</span></label>
+                                <label><input type="radio" name="sup_freq" value="3"> <span data-translate="survey.opt.freq_q_3">Kwartalnie (3)</span></label>
+                                <label><input type="radio" name="sup_freq" value="1"> <span data-translate="survey.opt.freq_y_1">Raz w roku (1)</span></label>
+                                <label><input type="radio" name="sup_freq" value="0"> <span data-translate="survey.opt.freq_rare_0">Rzadziej (0)</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. Open (no points) -->
+                    <div class="q-group">
+                        <div class="q-title" data-translate="survey.sections.open.title">6. Sekcja otwarta</div>
+                        <div class="q-field">
+                            <label data-translate="survey.open.comment">Dodatkowy komentarz (max 240 znaków)</label>
+                            <textarea class="q-textarea" name="open_comment" maxlength="240" placeholder="Co jeszcze jest ważne?"></textarea>
+                        </div>
+                    </div>
+                </form>
+
+                <div id="survey-results" style="display:none;" class="q-group">
+                    <div class="q-title" data-translate="survey.result.title">Wynik oceny</div>
+                    <div class="result-box">
+                        <div id="survey-score-overall" class="text-xl font-bold text-gray-900"></div>
+                        <div class="q-sub mt-1"><span data-translate="survey.result.interpretationLabel">Interpretacja</span>: <span id="survey-interpret"></span></div>
+                        <div class="result-grid mt-4">
+                            <div><span data-translate="survey.result.cat.e">E</span>: <span id="survey-score-e"></span>/25</div>
+                            <div><span data-translate="survey.result.cat.s">S</span>: <span id="survey-score-s"></span>/25</div>
+                            <div><span data-translate="survey.result.cat.g">G</span>: <span id="survey-score-g"></span>/20</div>
+                            <div><span data-translate="survey.result.cat.sup">Łańcuch dostaw</span>: <span id="survey-score-sup"></span>/15</div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="survey-prev" class="btn btn-secondary" type="button" style="display:none;" data-translate="survey.buttons.back">Wstecz</button>
+                <button id="survey-submit" class="btn btn-primary" type="button" style="display:none;" data-translate="survey.buttons.finish">Zakończ</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer id="contact" class="bg-gray-900 pt-16 pb-8 md:py-12" role="contentinfo">
@@ -1078,8 +1421,8 @@
                 "pricing.enterprise.feature4": "SLA guarantee",
                 
                 // Email CTA (ESG)
-                "esgEmail.headline": "Your ESG report ready in 24 hours – without chaos or stress",
-                "esgEmail.subtitle": "Answer 26 questions → get a personalized PDF with a benchmark in 24h. No commitment.",
+                "esgEmail.headline": "Your ESG report sent immediately – without chaos or stress",
+                "esgEmail.subtitle": "Answer 26 questions → get a personalized PDF instantly. No commitment.",
                 "esgEmail.cta": "Start ESG assessment",
                 "esgEmail.emailPlaceholder": "Email address",
                 "esgEmail.disclaimer": "You can unsubscribe at any time (STOP).",
@@ -1089,6 +1432,113 @@
                 "esgEmail.endpointNotConfigured": "Endpoint is not configured. Please contact support.",
                 "esgEmail.successMessage": "Done! Check your inbox — we’ve sent a link to your report.",
                 "esgEmail.errorMessage": "Failed to save the address. Please try again.",
+
+                // Survey modal
+                "survey.title": "ESG Quick Assessment",
+                "survey.consent.title": "Do you want to take a quick ESG test?",
+                "survey.consent.subtitle": "It takes ~3–5 minutes. You'll see your score and a benchmark at the end.",
+                "survey.buttons.yesStart": "Yes, start",
+                "survey.buttons.noLater": "Not now",
+                "survey.buttons.close": "Close",
+                "survey.buttons.back": "Back",
+                "survey.buttons.next": "Next",
+                "survey.buttons.finish": "Finish",
+                "survey.validation.fillAll": "Please fill in all fields to continue.",
+
+                "survey.sections.profile.title": "1. Company profile",
+                "survey.profile.industry": "Industry",
+                "survey.profile.industry.options.manufacturing": "Manufacturing",
+                "survey.profile.industry.options.services": "Services",
+                "survey.profile.industry.options.it": "IT / Software",
+                "survey.profile.industry.options.retail": "Retail",
+                "survey.profile.industry.options.transport": "Transport / Logistics",
+                "survey.profile.industry.options.other": "Other",
+                "survey.profile.employees": "Number of employees",
+                "survey.profile.employees.options.1_10": "1–10",
+                "survey.profile.employees.options.11_50": "11–50",
+                "survey.profile.employees.options.51_250": "51–250",
+                "survey.profile.employees.options.251_500": "251–500",
+                "survey.profile.employees.options.500_plus": "500+",
+                "survey.profile.country": "Main country of operations",
+                "survey.profile.revenue": "Annual revenue",
+                "survey.profile.revenue.options.lt1": "< 1M EUR",
+                "survey.profile.revenue.options.1_10": "1–10M EUR",
+                "survey.profile.revenue.options.10_50": "10–50M EUR",
+                "survey.profile.revenue.options.50_250": "50–250M EUR",
+                "survey.profile.revenue.options.250_plus": "250M EUR+",
+                "survey.profile.csrd": "Subject to CSRD",
+                "survey.profile.csrd.options.yes": "Yes",
+                "survey.profile.csrd.options.no": "No",
+                "survey.profile.csrd.options.unknown": "I don't know",
+                "survey.profile.level": "Reporting level",
+                "survey.profile.level.options.single": "Single entity",
+                "survey.profile.level.options.group": "Group",
+                "survey.profile.level.options.both": "Both",
+
+                "survey.sections.e.title": "2. Environment (E) — max 25 pts",
+                "survey.e.energy": "Do you monitor energy consumption?",
+                "survey.opt.yes_5": "Yes (5)",
+                "survey.opt.partial_3": "Partially (3)",
+                "survey.opt.no_0": "No (0)",
+                "survey.e.co2": "Do you monitor CO₂/carbon footprint?",
+                "survey.e.scopes": "Emission scopes covered",
+                "survey.opt.scopes_123_5": "Scope 1, 2 and 3 (5)",
+                "survey.opt.scopes_12_3": "Scope 1 and 2 (3)",
+                "survey.opt.scopes_1_1": "Scope 1 (1)",
+                "survey.opt.scopes_none_0": "None (0)",
+                "survey.e.ren": "Share of renewables in consumption (%)",
+                "survey.opt.ren_50_100_5": "50–100% (5)",
+                "survey.opt.ren_20_49_3": "20–49% (3)",
+                "survey.opt.ren_1_19_1": "1–19% (1)",
+                "survey.opt.ren_0_0": "0% (0)",
+                "survey.e.policy": "Do you have a formal environmental policy?",
+                "survey.opt.inprogress_3": "In progress (3)",
+
+                "survey.sections.s.title": "3. Social (S) — max 25 pts",
+                "survey.s.dei": "DEI policy",
+                "survey.s.hr": "Reporting HR data (e.g., turnover, safety)",
+                "survey.s.whistle": "Whistleblowing system",
+                "survey.s.incidents": "Monitoring incidents (e.g., LTIFR/TRIR)",
+                "survey.s.training": "Average training hours per employee per year",
+                "survey.opt.training_21_5": "21+ (5)",
+                "survey.opt.training_11_20_3": "11–20 (3)",
+                "survey.opt.training_1_10_1": "1–10 (1)",
+                "survey.opt.training_0_0": "0 (0)",
+
+                "survey.sections.g.title": "4. Governance (G) — max 20 pts",
+                "survey.g.risk": "Board regularly assesses ESG risks",
+                "survey.opt.dontknow_3": "I don't know (3)",
+                "survey.g.pay": "Management pay linked to ESG KPIs",
+                "survey.g.owner": "Formal ESG owner/committee",
+                "survey.g.qc": "ESG data quality controls (4-eyes, change logs)",
+
+                "survey.sections.sup.title": "5. Supply chain and data — max 15 pts",
+                "survey.sup.count": "How many suppliers? (number)",
+                "survey.sup.coverage": "% of key suppliers assessed on ESG",
+                "survey.opt.perc_75_5": "75% (5)",
+                "survey.opt.perc_25_75_3": "25–75% (3)",
+                "survey.opt.perc_lt25_1": "<25% (1)",
+                "survey.opt.perc_0_0": "0% (0)",
+                "survey.sup.collect": "Do you collect ESG data from suppliers?",
+                "survey.sup.freq": "How often do you collect ESG data?",
+                "survey.opt.freq_cont_5": "Continuous (5)",
+                "survey.opt.freq_q_3": "Quarterly (3)",
+                "survey.opt.freq_y_1": "Once a year (1)",
+                "survey.opt.freq_rare_0": "Less frequently (0)",
+
+                "survey.sections.open.title": "6. Open section",
+                "survey.open.comment": "Additional comment (max 240 characters)",
+
+                "survey.result.title": "Assessment result",
+                "survey.result.overall": "Score",
+                "survey.result.interpretationLabel": "Interpretation",
+                "survey.level.beginner": "Beginner level",
+                "survey.level.intermediate": "Intermediate level",
+                "survey.level.advanced": "Advanced level",
+                "survey.result.cat.e": "E",
+                "survey.result.cat.s": "S",
+                "survey.result.cat.g": "G",
+                "survey.result.cat.sup": "Supply",
 
                 // Footer
                 "footer.description": "Transform fuel data into actionable emission insights.",
@@ -1182,8 +1632,8 @@
                 "pricing.enterprise.feature4": "Gwarancja SLA",
                 
                 // Email CTA (ESG)
-                "esgEmail.headline": "Twój raport ESG gotowy w 24 godziny – bez chaosu i nerwów",
-                "esgEmail.subtitle": "Wypełnij 26 pytań → otrzymaj personalizowany PDF z benchmarkiem w 24h. Zero zobowiązań.",
+                "esgEmail.headline": "Twój raport ESG wysyłamy natychmiast – bez chaosu i nerwów",
+                "esgEmail.subtitle": "Wypełnij 26 pytań → otrzymasz personalizowany PDF natychmiast. Zero zobowiązań.",
                 "esgEmail.cta": "Rozpocznij ocenę ESG",
                 "esgEmail.emailPlaceholder": "Adres e‑mail",
                 "esgEmail.disclaimer": "Możesz zrezygnować w każdej chwili (STOP).",
@@ -1193,6 +1643,113 @@
                 "esgEmail.endpointNotConfigured": "Endpoint nie jest skonfigurowany. Skontaktuj się z administratorem.",
                 "esgEmail.successMessage": "Gotowe! Sprawdź pocztę — wysłaliśmy link do Twojego raportu.",
                 "esgEmail.errorMessage": "Nie udało się zapisać adresu. Spróbuj ponownie.",
+
+                // Survey modal
+                "survey.title": "Szybka ocena ESG",
+                "survey.consent.title": "Czy chcesz przejść szybki test ESG?",
+                "survey.consent.subtitle": "Zajmie ~3–5 minut. Po zakończeniu zobaczysz wynik i benchmark.",
+                "survey.buttons.yesStart": "Tak, rozpocznij",
+                "survey.buttons.noLater": "Nie teraz",
+                "survey.buttons.close": "Zamknij",
+                "survey.buttons.back": "Wstecz",
+                "survey.buttons.next": "Dalej",
+                "survey.buttons.finish": "Zakończ",
+                "survey.validation.fillAll": "Proszę wypełnić wszystkie pola, aby kontynuować.",
+
+                "survey.sections.profile.title": "1. Profil firmy",
+                "survey.profile.industry": "Branża",
+                "survey.profile.industry.options.manufacturing": "Produkcja",
+                "survey.profile.industry.options.services": "Usługi",
+                "survey.profile.industry.options.it": "IT / Oprogramowanie",
+                "survey.profile.industry.options.retail": "Handel",
+                "survey.profile.industry.options.transport": "Transport / Logistyka",
+                "survey.profile.industry.options.other": "Inna",
+                "survey.profile.employees": "Liczba pracowników",
+                "survey.profile.employees.options.1_10": "1–10",
+                "survey.profile.employees.options.11_50": "11–50",
+                "survey.profile.employees.options.51_250": "51–250",
+                "survey.profile.employees.options.251_500": "251–500",
+                "survey.profile.employees.options.500_plus": "500+",
+                "survey.profile.country": "Kraj głównych operacji",
+                "survey.profile.revenue": "Roczny przychód",
+                "survey.profile.revenue.options.lt1": "< 1 mln EUR",
+                "survey.profile.revenue.options.1_10": "1–10 mln EUR",
+                "survey.profile.revenue.options.10_50": "10–50 mln EUR",
+                "survey.profile.revenue.options.50_250": "50–250 mln EUR",
+                "survey.profile.revenue.options.250_plus": "250 mln EUR+",
+                "survey.profile.csrd": "Podleganie obowiązkowi CSRD",
+                "survey.profile.csrd.options.yes": "Tak",
+                "survey.profile.csrd.options.no": "Nie",
+                "survey.profile.csrd.options.unknown": "Nie wiem",
+                "survey.profile.level": "Raportowanie na poziomie",
+                "survey.profile.level.options.single": "Pojedynczej jednostki",
+                "survey.profile.level.options.group": "Grupy kapitałowej",
+                "survey.profile.level.options.both": "Oba",
+
+                "survey.sections.e.title": "2. Środowisko (E) — max 25 pkt",
+                "survey.e.energy": "Czy monitorujesz zużycie energii?",
+                "survey.opt.yes_5": "Tak (5)",
+                "survey.opt.partial_3": "Częściowo (3)",
+                "survey.opt.no_0": "Nie (0)",
+                "survey.e.co2": "Czy monitorujesz emisje CO₂ / ślad węglowy?",
+                "survey.e.scopes": "Zakresy emisji w raportowaniu",
+                "survey.opt.scopes_123_5": "Scope 1, 2 i 3 (5)",
+                "survey.opt.scopes_12_3": "Scope 1 i 2 (3)",
+                "survey.opt.scopes_1_1": "Scope 1 (1)",
+                "survey.opt.scopes_none_0": "Żaden (0)",
+                "survey.e.ren": "Udział OZE w zużyciu (%)",
+                "survey.opt.ren_50_100_5": "50–100% (5)",
+                "survey.opt.ren_20_49_3": "20–49% (3)",
+                "survey.opt.ren_1_19_1": "1–19% (1)",
+                "survey.opt.ren_0_0": "0% (0)",
+                "survey.e.policy": "Czy masz formalną politykę środowiskową?",
+                "survey.opt.inprogress_3": "W trakcie tworzenia (3)",
+
+                "survey.sections.s.title": "3. Społeczne (S) — max 25 pkt",
+                "survey.s.dei": "Polityka DEI",
+                "survey.s.hr": "Raportowanie danych HR (np. rotacja, bezpieczeństwo)",
+                "survey.s.whistle": "System whistleblowing",
+                "survey.s.incidents": "Monitorowanie wypadkowości (np. LTIFR/TRIR)",
+                "survey.s.training": "Średnia liczba godzin szkoleń / pracownika / rok",
+                "survey.opt.training_21_5": "21+ (5)",
+                "survey.opt.training_11_20_3": "11–20 (3)",
+                "survey.opt.training_1_10_1": "1–10 (1)",
+                "survey.opt.training_0_0": "0 (0)",
+
+                "survey.sections.g.title": "4. Ład korporacyjny (G) — max 20 pkt",
+                "survey.g.risk": "Zarząd regularnie ocenia ryzyka ESG",
+                "survey.opt.dontknow_3": "Nie wiem (3)",
+                "survey.g.pay": "Wynagrodzenie zarządu powiązane z KPI ESG",
+                "survey.g.owner": "Formalny właściciel/komitet ESG",
+                "survey.g.qc": "Kontrole jakości danych ESG (4-eyes, logi zmian)",
+
+                "survey.sections.sup.title": "5. Łańcuch dostaw i dane — max 15 pkt",
+                "survey.sup.count": "Ilu masz dostawców? (liczba)",
+                "survey.sup.coverage": "% kluczowych dostawców objętych oceną ESG",
+                "survey.opt.perc_75_5": "75% (5)",
+                "survey.opt.perc_25_75_3": "25–75% (3)",
+                "survey.opt.perc_lt25_1": "<25% (1)",
+                "survey.opt.perc_0_0": "0% (0)",
+                "survey.sup.collect": "Czy zbierasz dane ESG od dostawców?",
+                "survey.sup.freq": "Jak często zbierasz dane ESG?",
+                "survey.opt.freq_cont_5": "Ciągle / bieżąco (5)",
+                "survey.opt.freq_q_3": "Kwartalnie (3)",
+                "survey.opt.freq_y_1": "Raz w roku (1)",
+                "survey.opt.freq_rare_0": "Rzadziej (0)",
+
+                "survey.sections.open.title": "6. Sekcja otwarta",
+                "survey.open.comment": "Dodatkowy komentarz (max 240 znaków)",
+
+                "survey.result.title": "Wynik oceny",
+                "survey.result.overall": "Wynik",
+                "survey.result.interpretationLabel": "Interpretacja",
+                "survey.level.beginner": "Początkowy poziom",
+                "survey.level.intermediate": "Średni poziom",
+                "survey.level.advanced": "Zaawansowany poziom",
+                "survey.result.cat.e": "E",
+                "survey.result.cat.s": "S",
+                "survey.result.cat.g": "G",
+                "survey.result.cat.sup": "Łańcuch dostaw",
 
                 // Footer
                 "footer.description": "Przekształć dane o paliwach w praktyczne wglądy w emisje.",
@@ -2245,9 +2802,9 @@
                 en: 'Your ESG report ready in 24 hours – without chaos or stress',
                 pl: 'Twój raport ESG gotowy w 24 godziny – bez chaosu i nerwów'
             };
-            const ENABLE_TYPING_ANIMATION = false; // typing disabled globally
+            const ENABLE_TYPING_ANIMATION = false; // will keep disabled; external Typed.js will control animation
             const SPLIT_DELIMITER = ' – ';
-            const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwjq8xS20XeRs86XQItkLdoiawI-yvOxQCGhZ7urBv_MUE3tjH8eNu6JeiVse_DAw1o/exec';
+            const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxm84W8zSKNgdsXWrkh4OD-qZlUTK4s2v0_R1gN6HFWKIVuy6hgBY4-cezf978anmkS/exec';
 
             let typingTimers = [];
             function clearTypingTimers() {
@@ -2388,6 +2945,8 @@
                         input.focus();
                         return;
                     }
+                    // persist email for later PDF sending
+                    try { window.LAST_LEAD_EMAIL = email; } catch(_) {}
                     if (!GOOGLE_APPS_SCRIPT_WEB_APP_URL || GOOGLE_APPS_SCRIPT_WEB_APP_URL.includes('REPLACE_ME')) {
                         setFeedback(t('esgEmail.endpointNotConfigured', 'Endpoint is not configured. Please contact support.'), 'error');
                         return;
@@ -2421,6 +2980,7 @@
                         setFeedback(t('esgEmail.successMessage', 'Done! Check your inbox — we’ve sent a link to your report.'), 'success');
                         form.reset();
                         submitBtn.textContent = t('esgEmail.button.sent', 'Sent');
+                        openSurveyModal();
                     }, 600);
                 });
             }
@@ -2447,6 +3007,788 @@
                     setTimeout(startTypingEffect, 50);
                 }
             }
+
+            // External Typed.js headline init (uses #typed-headline)
+            function startTypedJsHeadline() {
+                try {
+                    const el = document.getElementById('typed-headline');
+                    if (!el || !window.Typed) return;
+                    const strings = [HEADLINE_BY_LANG[currentLanguage] || HEADLINE_BY_LANG.en];
+                    if (el._typed && el._typed.destroy) { el._typed.destroy(); }
+                    const typed = new window.Typed('#typed-headline', {
+                        strings,
+                        typeSpeed: 32,
+                        backSpeed: 18,
+                        startDelay: 200,
+                        backDelay: 3000,
+                        smartBackspace: true,
+                        loop: true,
+                        showCursor: false
+                    });
+                    el._typed = typed;
+                } catch(_) {}
+            }
+            document.addEventListener('DOMContentLoaded', startTypedJsHeadline);
+            if (originalChangeLanguage) {
+                const prev = window.changeLanguage;
+                window.changeLanguage = function(lang) { prev(lang); setTimeout(startTypedJsHeadline, 50); };
+            }
+
+            // ===== Survey Modal Logic =====
+            function qs(id) { return document.getElementById(id); }
+            function openSurveyModal() {
+                const el = qs('survey-modal');
+                if (el) { el.classList.add('show'); el.setAttribute('aria-hidden', 'false'); }
+                // init first step
+                showStep('consent');
+            }
+            function closeSurveyModal() {
+                const el = qs('survey-modal');
+                if (el) { el.classList.remove('show'); el.setAttribute('aria-hidden', 'true'); }
+            }
+            window.openSurveyModal = openSurveyModal;
+
+            const steps = ['consent', 'form', 'results'];
+            let currentStep = 'consent';
+            function showStep(step) {
+                currentStep = step;
+                const consent = qs('survey-step-consent');
+                const form = qs('survey-form');
+                const results = qs('survey-results');
+                const prev = qs('survey-prev');
+                const next = qs('survey-next');
+                const submit = qs('survey-submit');
+                if (consent) consent.style.display = step === 'consent' ? '' : 'none';
+                if (form) form.style.display = step === 'form' ? '' : 'none';
+                if (results) results.style.display = step === 'results' ? '' : 'none';
+                if (prev) prev.style.display = step === 'form' ? '' : 'none';
+                if (next) next.style.display = step === 'form' ? '' : 'none';
+                if (submit) submit.style.display = step === 'form' ? '' : 'none';
+            }
+
+            function computeScores() {
+                const getVal = (name) => {
+                    const el = document.querySelector(`[name="${name}"]:checked`);
+                    return el ? Number(el.value) : 0;
+                };
+                // Require all radios selected; if any missing, block submission
+                const requiredNames = [
+                    'e_energy','e_co2','e_scopes','e_res','e_policy',
+                    's_dei','s_hr','s_whistle','s_incidents','s_training',
+                    'g_risk','g_pay','g_owner','g_qc',
+                    'sup_coverage','sup_collect','sup_freq'
+                ];
+                const missing = requiredNames.filter(n => !document.querySelector(`[name="${n}"]:checked`));
+                if (missing.length) {
+                    alert(t('survey.validation.fillAll','Please fill in all fields to continue.'));
+                    throw new Error('Validation: missing required answers: ' + missing.join(','));
+                }
+                // E 25
+                const e = getVal('e_energy') + getVal('e_co2') + getVal('e_scopes') + getVal('e_res') + getVal('e_policy');
+                // S 25
+                const s = getVal('s_dei') + getVal('s_hr') + getVal('s_whistle') + getVal('s_incidents') + getVal('s_training');
+                // G 20
+                const g = getVal('g_risk') + getVal('g_pay') + getVal('g_owner') + getVal('g_qc');
+                // Supply 15
+                const sup = getVal('sup_coverage') + getVal('sup_collect') + getVal('sup_freq');
+                const total = e + s + g + sup;
+                const percent = Math.round((total / 85) * 100);
+                let interpret = 'Początkowy poziom';
+                if (percent >= 61) interpret = 'Zaawansowany poziom';
+                else if (percent >= 31) interpret = 'Średni poziom';
+                return { e, s, g, sup, total, percent, interpret };
+            }
+
+            function renderResults() {
+                const r = computeScores();
+                const setText = (id, text) => { const el = qs(id); if (el) el.textContent = text; };
+                const overallLabel = (translations[currentLanguage]?.['survey.result.overall']) || 'Wynik';
+                setText('survey-score-overall', `${overallLabel}: ${r.total}/85 (${r.percent}%)`);
+                const levels = {
+                    beginner: translations[currentLanguage]?.['survey.level.beginner'] || 'Początkowy poziom',
+                    intermediate: translations[currentLanguage]?.['survey.level.intermediate'] || 'Średni poziom',
+                    advanced: translations[currentLanguage]?.['survey.level.advanced'] || 'Zaawansowany poziom'
+                };
+                let interp = levels.beginner;
+                if (r.percent >= 61) interp = levels.advanced;
+                else if (r.percent >= 31) interp = levels.intermediate;
+                setText('survey-interpret', interp);
+                setText('survey-score-e', String(r.e));
+                setText('survey-score-s', String(r.s));
+                setText('survey-score-g', String(r.g));
+                setText('survey-score-sup', String(r.sup));
+                showStep('results');
+                // After showing results, generate PDF and email only (no local download)
+                try { generateAndSendPdf(r, { alsoDownload: false }); } catch (e) { console.warn('PDF generation failed', e); }
+            }
+            // ===== PDF generation and email via Apps Script =====
+            async function generateAndSendPdf(scores, opts={ alsoDownload: false }) {
+                try {
+                    const jsPDF = window.jspdf.jsPDF;
+                    if (!jsPDF) throw new Error('jsPDF not loaded');
+                    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const margin = 48; let y = margin;
+                    // extra gutter to guarantee no horizontal overflow in viewers
+                    const contentWidth = pageWidth - margin * 2 - 24;
+                    const lineHeight = 16;
+
+                    const t = (k, fb='') => (translations[currentLanguage] && translations[currentLanguage][k]) || fb || k;
+                    const emailInput = document.getElementById('lead-email');
+                    const email = (emailInput ? emailInput.value.trim() : '') || (window.LAST_LEAD_EMAIL || '');
+
+                    // Ensure Unicode-capable font is embedded to avoid broken spacing
+                    try { await ensurePdfFontLoaded(doc); } catch(_) {}
+                    const FONT_FAMILY = (doc.getFontList && (doc.getFontList()['DejaVuSans'] ? 'DejaVuSans' : (doc.getFontList()['NotoSans'] ? 'NotoSans' : 'Roboto')));
+                    const useFont = (weight='normal') => { try { doc.setFont(FONT_FAMILY, weight); } catch(_) {} };
+                    // neutral tracking/leading for consistent glyph spacing
+                    try { doc.setCharSpace(0); } catch(_) {}
+                    try { doc.setLineHeightFactor(1.2); } catch(_) {}
+
+                    // Header band only (logo disabled)
+                    try {
+                        // gradient effect by stripes
+                        const bandH = 68;
+                        for (let i = 0; i < bandH; i+=2) {
+                            const g = 190 - Math.floor(i * 1.2);
+                            doc.setFillColor(149, 206, 36);
+                            if (i > bandH/2) doc.setFillColor(135, 190, 30);
+                            doc.rect(0, i, pageWidth, 2, 'F');
+                        }
+                        // header title on band
+                        doc.setTextColor(255,255,255);
+                        useFont('bold'); doc.setFontSize(18);
+                        try { doc.setCharSpace(0); } catch(_) {}
+                        doc.text((t('survey.title', currentLanguage==='pl' ? 'Szybka ocena ESG' : 'ESG Quick Assessment')), margin + 48, 35);
+                        doc.setTextColor(0,0,0);
+                        y = 92;
+                    } catch(_) { /* ignore header errors */ }
+
+                    // Title
+                    useFont('bold'); doc.setFontSize(16);
+                    doc.text((t('survey.result.title','Assessment result')), margin, y); y += 8;
+                    useFont('normal'); doc.setFontSize(11);
+                    const overallLabel = t('survey.result.overall','Score');
+                    const interpretLabel = t('survey.result.interpretationLabel','Interpretation');
+                    const levels = {
+                        beginner: t('survey.level.beginner', currentLanguage === 'pl' ? 'Początkowy poziom' : 'Beginner level'),
+                        intermediate: t('survey.level.intermediate', currentLanguage === 'pl' ? 'Średni poziom' : 'Intermediate level'),
+                        advanced: t('survey.level.advanced', currentLanguage === 'pl' ? 'Zaawansowany poziom' : 'Advanced level')
+                    };
+                    const interp = scores.percent >= 61 ? levels.advanced : (scores.percent >= 31 ? levels.intermediate : levels.beginner);
+                    y += 16; // spacing after title
+                    // highlight card for overall
+                    doc.setDrawColor(230, 240, 220);
+                    doc.setFillColor(244, 251, 235);
+                    doc.setLineWidth(0.6);
+                    doc.roundedRect(margin-6, y-12, pageWidth - margin*2 + 12, 60, 8, 8, 'FD');
+                    useFont('bold');
+                    doc.text(`${overallLabel}: ${scores.total}/85 (${scores.percent}%)`, margin, y);
+                    useFont('normal');
+                    y += 16; doc.text(`${interpretLabel}: ${interp}`, margin, y); y += 22;
+
+                    // Category scores
+                    const supplyLabel = t('survey.result.cat.sup','Supply');
+                    const categoriesHeader = `E / S / G / ${supplyLabel}`;
+                    useFont('bold'); doc.text(categoriesHeader, margin, y);
+                    // divider
+                    doc.setDrawColor(230,230,230);
+                    doc.line(margin, y+4, pageWidth - margin, y+4);
+                    y += 14; useFont('normal');
+                    // Single-column scores to avoid overflow in narrow layouts
+                    y = wrapText(doc, `E: ${scores.e}/25`, margin, y, contentWidth, lineHeight, margin, pageHeight);
+                    y = wrapText(doc, `S: ${scores.s}/25`, margin, y, contentWidth, lineHeight, margin, pageHeight);
+                    y = wrapText(doc, `G: ${scores.g}/20`, margin, y, contentWidth, lineHeight, margin, pageHeight);
+                    y = wrapText(doc, `${supplyLabel}: ${scores.sup}/15`, margin, y, contentWidth, lineHeight, margin, pageHeight);
+                    y += 6;
+
+                    // Recommendations (short block per overall level)
+                    const overall = scores.percent;
+                    const rec = pickRecommendations(overall);
+                    const recTitle = templateString(rec.title, { score_overall: String(scores.percent) });
+                    const recHow = templateString(rec.how, { score_overall: String(scores.percent) });
+                    const recWhy = templateString(rec.why, { score_overall: String(scores.percent) });
+                    const recHeader = currentLanguage === 'pl' ? 'Rekomendacje' : 'Recommendations';
+                    useFont('bold'); try { doc.setCharSpace(0); } catch(_) {}
+                    doc.text(recHeader, margin, y);
+                    y += 10; useFont('normal'); try { doc.setCharSpace(0); } catch(_) {}
+                    // Render recommendation as single-column labeled paragraphs; also hard-truncate overly long strings
+                    const prevSize = doc.getFontSize();
+                    const recBodySize = (currentLanguage === 'pl') ? 9.5 : 10;
+                    const recLineHeight = recBodySize + 2.0;
+                    doc.setFontSize(recBodySize);
+                    const recTitleShort = shortenForPdf(recTitle, currentLanguage, 180);
+                    const recHowShort = shortenForPdf(recHow, currentLanguage, 180);
+                    const recWhyShort = shortenForPdf(recWhy, currentLanguage, 180);
+                    // Diagnoza / Diagnosis
+                    useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Diagnoza:' : 'Diagnosis:'), margin, y, contentWidth, recLineHeight, margin, pageHeight);
+                    useFont('normal'); y = wrapText(doc, recTitleShort, margin, y, contentWidth, recLineHeight, margin, pageHeight) + 3;
+                    // Co i jak / What-how
+                    useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Co i jak:' : 'What/how:'), margin, y, contentWidth, recLineHeight, margin, pageHeight);
+                    useFont('normal'); y = wrapText(doc, recHowShort, margin, y, contentWidth, recLineHeight, margin, pageHeight) + 3;
+                    // Dlaczego / Why
+                    useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Dlaczego:' : 'Why:'), margin, y, contentWidth, recLineHeight, margin, pageHeight);
+                    useFont('normal'); y = wrapText(doc, recWhyShort, margin, y, contentWidth, recLineHeight, margin, pageHeight) + 10;
+                    doc.setFontSize(prevSize);
+
+                    // Category-specific recommendations
+                    const ePct = Math.round((scores.e / 25) * 100);
+                    const sPct = Math.round((scores.s / 25) * 100);
+                    const gPct = Math.round((scores.g / 20) * 100);
+                    const supPct = Math.round((scores.sup / 15) * 100);
+
+                    const isPL = (currentLanguage === 'pl');
+                    const catBlocks = [
+                        { key: 'e', label: isPL ? 'E – Środowisko' : 'E – Environment', score: scores.e, max: 25, pct: ePct },
+                        { key: 's', label: isPL ? 'S – Społeczne' : 'S – Social', score: scores.s, max: 25, pct: sPct },
+                        { key: 'g', label: isPL ? 'G – Ład korporacyjny' : 'G – Governance', score: scores.g, max: 20, pct: gPct },
+                        { key: 'sup', label: isPL ? 'Łańcuch dostaw i dane' : 'Supply chain & Data', score: scores.sup, max: 15, pct: supPct },
+                    ];
+
+                    for (const blk of catBlocks) {
+                        const catRec = pickCategoryRecommendation(blk.key, blk.pct);
+                        if (!catRec) continue;
+                        // Category as single-column with labeled paragraphs (no background box)
+                        useFont('bold');
+                        y = wrapText(doc, `${blk.label}: ${blk.score}/${blk.max} (${blk.pct}%)`, margin, y, contentWidth, lineHeight, margin, pageHeight) + 2;
+                        const prevCatSize2 = doc.getFontSize();
+                        const catSize = (currentLanguage === 'pl') ? 9.5 : 10;
+                        const catLH = catSize + 2.0;
+                        doc.setFontSize(catSize);
+                        const catTitleShort = shortenForPdf(catRec.title, currentLanguage, 160);
+                        const catHowShort = shortenForPdf(catRec.how, currentLanguage, 160);
+                        const catWhyShort = shortenForPdf(catRec.why, currentLanguage, 160);
+                        useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Diagnoza:' : 'Diagnosis:'), margin, y, contentWidth, catLH, margin, pageHeight);
+                        useFont('normal'); y = wrapText(doc, catTitleShort, margin, y, contentWidth, catLH, margin, pageHeight) + 2;
+                        useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Co i jak:' : 'What/how:'), margin, y, contentWidth, catLH, margin, pageHeight);
+                        useFont('normal'); y = wrapText(doc, catHowShort, margin, y, contentWidth, catLH, margin, pageHeight) + 2;
+                        useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Dlaczego:' : 'Why:'), margin, y, contentWidth, catLH, margin, pageHeight);
+                        useFont('normal'); y = wrapText(doc, catWhyShort, margin, y, contentWidth, catLH, margin, pageHeight) + 8;
+                        doc.setFontSize(prevCatSize2);
+                        if (y > pageHeight - 80) { doc.addPage(); y = margin; }
+                    }
+
+                    // Prepare outputs once
+                    const dataUri = doc.output('datauristring');
+                    const base64 = (dataUri.split(',')[1]) || '';
+                    const pdfBlob = doc.output('blob');
+
+                    // Render and upload to Apps Script (for emailing)
+                    const form = new FormData();
+                    form.append('action', 'email_pdf');
+                    form.append('lang', currentLanguage);
+                    form.append('email', email);
+                    form.append('filename', `ESG_Assessment_${Date.now()}.pdf`);
+                    form.append('pdf', pdfBlob, 'report.pdf');
+                    form.append('pdfBase64', base64);
+                    try {
+                        if (!email) throw new Error('Email missing');
+                        if (String(window.location.protocol).startsWith('file')) throw new Error('Local file protocol, use iframe');
+                        const res = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: form });
+                        if (!res.ok) throw new Error('Email send failed');
+                    } catch (netErr) {
+                        console.warn('Email send fallback via iframe', netErr);
+                        try { submitPdfViaIframe({ action: 'email_pdf', lang: currentLanguage, email, filename: `ESG_Assessment_${Date.now()}.pdf`, pdfBase64: base64 }); } catch(_) {}
+                    }
+                } catch (e) {
+                    console.warn('generateAndSendPdf error', e);
+                }
+            }
+
+            function wrapText(doc, text, x, y, maxWidth, lineHeight = 14, topMargin = 48, pageHeight = 842) {
+                const lines = doc.splitTextToSize(String(text || ''), maxWidth);
+                for (const line of lines) {
+                    if (y > pageHeight - (topMargin + lineHeight)) {
+                        doc.addPage();
+                        y = topMargin;
+                    }
+                    doc.text(line, x, y);
+                    y += lineHeight;
+                }
+                return y;
+            }
+
+            async function getImageDataUrl(src) {
+                try {
+                    const res = await fetch(src);
+                    if (!res.ok) return '';
+                    const blob = await res.blob();
+                    return await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => resolve('');
+                        reader.readAsDataURL(blob);
+                    });
+                } catch(_) { return ''; }
+            }
+
+            async function ensurePdfFontLoaded(doc) {
+                // Built-in helvetica can cause odd spacing; embed a Unicode font (prefer DejaVu Sans, then NotoSans, fallback Roboto)
+                try {
+                    if (doc.getFontList && (doc.getFontList()["DejaVuSans"] || doc.getFontList()["NotoSans"] || doc.getFontList()["Roboto"])) { return; }
+                } catch(_) {}
+                // Prefer DejaVu Sans (broad glyph coverage), then NotoSans, then Roboto
+                const dejavuReg = 'https://cdn.jsdelivr.net/gh/dejavu-fonts/dejavu-fonts-ttf/ttf/DejaVuSans.ttf';
+                const dejavuBold = 'https://cdn.jsdelivr.net/gh/dejavu-fonts/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf';
+                const notoReg = 'https://cdn.jsdelivr.net/gh/google/fonts/ofl/notosans/NotoSans-Regular.ttf';
+                const notoBold = 'https://cdn.jsdelivr.net/gh/google/fonts/ofl/notosans/NotoSans-Bold.ttf';
+                const robotoReg = 'https://cdn.jsdelivr.net/gh/google/fonts/apache/roboto/Roboto-Regular.ttf';
+                const robotoBold = 'https://cdn.jsdelivr.net/gh/google/fonts/apache/roboto/Roboto-Bold.ttf';
+                const [regB64, boldB64] = await Promise.all([
+                    fetchAsBase64(dejavuReg).catch(()=> fetchAsBase64(notoReg).catch(()=> fetchAsBase64(robotoReg).catch(()=>''))),
+                    fetchAsBase64(dejavuBold).catch(()=> fetchAsBase64(notoBold).catch(()=> fetchAsBase64(robotoBold).catch(()=>''))),
+                ]);
+                try {
+                    if (regB64) {
+                        doc.addFileToVFS('DejaVuSans.ttf', regB64);
+                        doc.addFont('DejaVuSans.ttf', 'DejaVuSans', 'normal');
+                        doc.addFileToVFS('NotoSans-Regular.ttf', regB64);
+                        doc.addFont('NotoSans-Regular.ttf', 'NotoSans', 'normal');
+                        doc.addFileToVFS('Roboto-Regular.ttf', regB64);
+                        doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+                    }
+                    if (boldB64) {
+                        doc.addFileToVFS('DejaVuSans-Bold.ttf', boldB64);
+                        doc.addFont('DejaVuSans-Bold.ttf', 'DejaVuSans', 'bold');
+                        doc.addFileToVFS('NotoSans-Bold.ttf', boldB64);
+                        doc.addFont('NotoSans-Bold.ttf', 'NotoSans', 'bold');
+                        doc.addFileToVFS('Roboto-Bold.ttf', boldB64);
+                        doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold');
+                    }
+                } catch(_) {}
+            }
+
+            async function fetchAsBase64(url) {
+                const res = await fetch(url);
+                if (!res.ok) return '';
+                const blob = await res.blob();
+                return await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const result = String(reader.result || '');
+                        const base64 = result.split(',')[1] || '';
+                        resolve(base64);
+                    };
+                    reader.onerror = () => resolve('');
+                    reader.readAsDataURL(blob);
+                });
+            }
+
+            // Preload assets (logo) early to preserve user gesture for downloads
+            (function preloadLogo() {
+                const url = 'assets/images/img_img_48x48.png';
+                try {
+                    getImageDataUrl(url).then((data) => { try { window.LOGO_DATA_URL = data || ''; } catch(_) {} });
+                } catch(_) {}
+            })();
+
+            function submitPdfViaIframe(fields) {
+                const url = GOOGLE_APPS_SCRIPT_WEB_APP_URL;
+                if (!url) return;
+                const form = document.createElement('form');
+                form.action = url;
+                form.method = 'POST';
+                form.target = 'lead-target';
+                Object.keys(fields || {}).forEach(k => {
+                    const inp = document.createElement('input');
+                    inp.type = 'hidden';
+                    inp.name = k;
+                    inp.value = String(fields[k] ?? '');
+                    form.appendChild(inp);
+                });
+                document.body.appendChild(form);
+                try { form.submit(); } finally { setTimeout(() => { try { document.body.removeChild(form); } catch(_) {} }, 500); }
+            }
+
+            function templateString(str, map) {
+                if (!str) return '';
+                return str.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, k) => (k in map ? String(map[k]) : ''));
+            }
+
+            function condenseText(text, maxLen) {
+                const s = String(text || '').replace(/\s+/g, ' ').trim();
+                if (!maxLen || s.length <= maxLen) return s;
+                return s.slice(0, Math.max(0, maxLen - 1)).trim() + '…';
+            }
+
+            function shortenForPdf(text, lang='pl', maxLen=180) {
+                const s = String(text || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+                if (s.length <= maxLen) return s;
+                // Language-aware compression: drop filler words, keep core meaning
+                const fillersPl = ['że','to','oraz','i','na','do','z','za','raz','w','jest','są','by','dla'];
+                const fillersEn = ['that','the','and','or','to','of','in','is','are','for','by','with'];
+                const tokens = s.split(' ');
+                const filtered = tokens.filter(t => {
+                    const low = t.toLowerCase();
+                    return lang === 'pl' ? !fillersPl.includes(low) : !fillersEn.includes(low);
+                });
+                let joined = filtered.join(' ');
+                if (joined.length > maxLen) joined = joined.slice(0, maxLen - 1).trim();
+                return joined + '…';
+            }
+
+            function pickRecommendations(percent) {
+                const lang = currentLanguage || 'pl';
+                const recs = (SHORT_RECOMMENDATIONS[lang] || RECOMMENDATIONS[lang]);
+                const band = percent <= 30 ? 'low' : (percent <= 60 ? 'mid' : 'high');
+                const opts = recs[band];
+                return opts[Math.floor(Math.random()*opts.length)];
+            }
+
+            const RECOMMENDATIONS = {
+                pl: {
+                    low: [
+                        { title: 'Diagnoza: Wynik {{score_overall}}% sugeruje startowy poziom dojrzałości ESG.', how: 'Co i jak: Zacznij od minimum operacyjnego: polityka środowiskowa, podstawowe KPI HR (rotacja, wypadkowość), właściciel ESG i coroczny przegląd ryzyk.', why: 'Dlaczego: Te elementy najszybciej obniżają ryzyko audytowe i budują fundament pod zgodność z ESRS/CSRD.' },
+                        { title: 'Diagnoza: Obecny poziom ESG jest niski i wymaga podstawowych porządków procesowych.', how: 'Co i jak: Ustal 3-miesięczny plan: (1) zmapuj źródła danych, (2) wdroż proste kontrole jakości (4-eyes), (3) przygotuj plan zbierania danych raz na kwartał.', why: 'Dlaczego: Bez spójnych danych nie uruchomisz żadnej automatyzacji ani audytowalnego raportu.' }
+                    ],
+                    mid: [
+                        { title: 'Diagnoza: {{score_overall}}% – masz podstawy, ale brakuje spójności między działami.', how: 'Co i jak: Ujednolić modele danych (jedna tabela „źródło prawdy”), dodać cele (np. redukcja CO₂ do roku X) i przegląd zarządu raz/rok.', why: 'Dlaczego: Spina to procesy w całość i odblokowuje szybki eksport do ESRS/GRI.' },
+                        { title: 'Diagnoza: Poziom średni – duży potencjał do „szybkich wygranych”.', how: 'Co i jak: Dopnij brakujące polityki (antykorupcyjna, whistleblowing), ustaw kwartalny rytm zbierania danych i bazowe dashboardy KPI.', why: 'Dlaczego: Podniesiesz wiarygodność raportu i obniżysz koszty kolejnego cyklu.' }
+                    ],
+                    high: [
+                        { title: 'Diagnoza: {{score_overall}}% – dojrzały poziom ESG.', how: 'Co i jak: Przejdź na ciągłe zbieranie danych (near‑real time), rozszerz Scope 3 i wprowadź niezależne assurance wybranych wskaźników.', why: 'Dlaczego: To wzmacnia zaufanie inwestorów i pozwala publicznie pokazać przewagę nad rynkiem.' },
+                        { title: 'Diagnoza: Wynik wysoki, proces jest stabilny.', how: 'Co i jak: Zintegruj wynagrodzenie zarządu z KPI ESG i uruchom roczne przeglądy celów zewnętrznym doradcą.', why: 'Dlaczego: Powiązanie motywacji z KPI domyka ład korporacyjny i redukuje ryzyko greenwashingu.' }
+                    ]
+                },
+                en: {
+                    low: [
+                        { title: 'Diagnosis: The score {{score_overall}}% suggests a starting ESG maturity level.', how: 'What/how: Start with the operational minimum: environmental policy, basic HR KPIs (turnover, incident rate), ESG owner and an annual risk review.', why: 'Why: These quickly lower audit risk and build the foundation for ESRS/CSRD compliance.' },
+                        { title: 'Diagnosis: Current ESG level is low and requires basic process cleanup.', how: 'What/how: Set a 3‑month plan: (1) map data sources, (2) implement simple 4‑eyes checks, (3) prepare a quarterly data collection plan.', why: 'Why: Without consistent data you cannot automate nor produce an auditable report.' }
+                    ],
+                    mid: [
+                        { title: 'Diagnosis: {{score_overall}}% – foundations exist but lack cross‑department consistency.', how: 'What/how: Standardize data models (single source of truth), add targets (e.g., CO₂ reduction by year X) and conduct an annual board review.', why: 'Why: This connects processes end‑to‑end and enables quick export to ESRS/GRI.' },
+                        { title: 'Diagnosis: Mid level – strong potential for quick wins.', how: 'What/how: Finalize missing policies (anti‑corruption, whistleblowing), set a quarterly data rhythm and baseline KPI dashboards.', why: 'Why: Increases report credibility and reduces next‑cycle costs.' }
+                    ],
+                    high: [
+                        { title: 'Diagnosis: {{score_overall}}% – mature ESG level.', how: 'What/how: Move to continuous data collection (near‑real time), expand Scope 3 and add independent assurance for selected metrics.', why: 'Why: Strengthens investor trust and lets you demonstrate market advantage.' },
+                        { title: 'Diagnosis: High score, stable process.', how: 'What/how: Link management compensation with ESG KPIs and run annual goal reviews with an external advisor.', why: 'Why: Aligning incentives with KPIs completes governance and reduces greenwashing risk.' }
+                    ]
+                }
+            };
+
+            // Concise variants for PDF (short, semantic)
+            const SHORT_RECOMMENDATIONS = {
+                pl: {
+                    low: [
+                        { title: 'Wynik {{score_overall}}% – start.', how: 'Polityka środowiskowa, podstawowe KPI HR, właściciel ESG.', why: 'Szybko obniża ryzyko i daje bazę pod ESRS/CSRD.' },
+                        { title: 'ESG niski – porządek w danych.', how: 'Mapa źródeł, 4‑eyes, kwartalne zbieranie.', why: 'Bez danych nie ma audytowalnego raportu.' }
+                    ],
+                    mid: [
+                        { title: '{{score_overall}}% – brak spójności.', how: 'Ujednolić model danych, dodać cele i roczny przegląd.', why: 'Spina procesy i ułatwia ESRS/GRI.' },
+                        { title: 'Poziom średni – szybkie wygrane.', how: 'Domknąć polityki, kwartalny rytm, bazowe KPI.', why: 'Wiarygodniejszy raport i niższe koszty.' }
+                    ],
+                    high: [
+                        { title: '{{score_overall}}% – dojrzały.', how: 'Ciągłe dane, rozszerzyć Scope 3, dodać assurance.', why: 'Większe zaufanie i przewaga rynkowa.' },
+                        { title: 'Wynik wysoki, proces stabilny.', how: 'Powiązać wynagrodzenie z KPI ESG, coroczny przegląd celów.', why: 'Domknięty ład i mniej greenwashingu.' }
+                    ]
+                },
+                en: {
+                    low: [
+                        { title: '{{score_overall}}% – starting point.', how: 'Env. policy, basic HR KPIs, ESG owner.', why: 'Quickly lowers audit risk; base for ESRS/CSRD.' },
+                        { title: 'Low ESG – fix data basics.', how: 'Source map, 4‑eyes checks, quarterly collection.', why: 'No consistent data → no auditable report.' }
+                    ],
+                    mid: [
+                        { title: '{{score_overall}}% – gaps in consistency.', how: 'Standardize data model, add targets, annual board review.', why: 'Connects processes; easy ESRS/GRI export.' },
+                        { title: 'Mid level – quick wins.', how: 'Finish policies, quarterly rhythm, baseline KPIs.', why: 'Higher credibility, lower costs.' }
+                    ],
+                    high: [
+                        { title: '{{score_overall}}% – mature.', how: 'Continuous data, expand Scope 3, add assurance.', why: 'Stronger trust; market edge.' },
+                        { title: 'High and stable.', how: 'Link pay to ESG KPIs; yearly goal reviews.', why: 'Aligns incentives; reduces greenwashing risk.' }
+                    ]
+                }
+            };
+
+            function pickCategoryRecommendation(categoryKey, percent) {
+                const lang = (currentLanguage || 'pl');
+                const source = SHORT_RECOMMENDATIONS_CATEGORIES[lang] || RECOMMENDATIONS_CATEGORIES[lang] || RECOMMENDATIONS_CATEGORIES['pl'];
+                const band = percent <= 30 ? 'low' : (percent <= 60 ? 'mid' : 'high');
+                const opts = (source[categoryKey] && source[categoryKey][band]) || [];
+                return opts.length ? opts[Math.floor(Math.random()*opts.length)] : null;
+            }
+
+            const RECOMMENDATIONS_CATEGORIES = {
+                pl: {
+                    e: {
+                        low: [
+                            { title: 'Diagnoza: Brakuje monitoringu energii i emisji.', how: 'Co i jak: Wdroż prosty pomiar energii (faktury + licznik) i zacznij od Scope 1–2; przygotuj politykę środowiskową.', why: 'Dlaczego: Bez danych emisji nie zaplanujesz realnych celów redukcyjnych.' },
+                            { title: 'Diagnoza: Obszar E jest na wczesnym etapie.', how: 'Co i jak: Ustal bazę emisji (rok bazowy), zacznij raportować zużycie energii i wprowadź min. 20% OZE w miksie.', why: 'Dlaczego: To szybka ścieżka do widocznej poprawy i zgodności z oczekiwaniami ESRS.' }
+                        ],
+                        mid: [
+                            { title: 'Diagnoza: Monitorujesz część wskaźników, ale nie wszystkie zakresy emisji.', how: 'Co i jak: Rozszerz zakres na Scope 1–2 (docelowo 3), wprowadź kwartalne zbieranie danych i plan redukcji do roku X.', why: 'Dlaczego: Pełniejszy obraz środowiskowy i przewidywalność celów.' },
+                            { title: 'Diagnoza: Stabilne podstawy, brakuje celów i OZE.', how: 'Co i jak: Zdefiniuj roczne cele (kWh/produkt, tCO₂e/rok) i zwiększ udział OZE do ≥20%.', why: 'Dlaczego: Cele operacyjne wymuszają realną poprawę, OZE obniża emisje Scope 2.' }
+                        ],
+                        high: [
+                            { title: 'Diagnoza: Monitoring E jest dojrzały.', how: 'Co i jak: Rozwiń Scope 3 dla kluczowych kategorii i wprowadź weryfikację zewnętrzną wybranych wskaźników.', why: 'Dlaczego: Podnosi wiarygodność i gotowość na audyt.' },
+                            { title: 'Diagnoza: Wysoka kontrola nad danymi E.', how: 'Co i jak: Przenieś zbieranie energii i emisji do trybu ciągłego (IoT/ETL) i postaw na OZE 50%+.', why: 'Dlaczego: Ciągłość = lepsze decyzje operacyjne i przewaga kosztowa.' }
+                        ]
+                    },
+                    s: {
+                        low: [
+                            { title: 'Diagnoza: Brak polityk i danych HR.', how: 'Co i jak: Wprowadź whistleblowing, podstawowe wskaźniki HR (rotacja, absencja) i monitoring wypadkowości.', why: 'Dlaczego: To rdzeń bezpieczeństwa i zgodności (w tym dyrektywa o sygnalistach).' },
+                            { title: 'Diagnoza: Obszar S jest nieuporządkowany.', how: 'Co i jak: Przygotuj politykę DEI i min. 8h szkoleń/os./rok; uruchom rejestr incydentów BHP.', why: 'Dlaczego: Buduje kulturę i minimalizuje ryzyko operacyjne.' }
+                        ],
+                        mid: [
+                            { title: 'Diagnoza: Podstawy S działają, brakuje głębi.', how: 'Co i jak: Wprowadź pomiar luki płacowej i regularne ankiety pracownicze.', why: 'Dlaczego: Dane jakościowe i równościowe zwiększają zaufanie i retencję.' },
+                            { title: 'Diagnoza: Częściowy raport HR, brak pełnych KPI BHP.', how: 'Co i jak: Ustal LTIFR/TRIR i targety szkoleń (≥12h/os./rok).', why: 'Dlaczego: To standard branżowy i szybka poprawa wyników S.' }
+                        ],
+                        high: [
+                            { title: 'Diagnoza: Silny obszar S.', how: 'Co i jak: Skaluj programy DEI na kadrę zarządzającą i publikuj roczne cele S.', why: 'Dlaczego: Transparentność wzmacnia markę pracodawcy.' },
+                            { title: 'Diagnoza: Stabilne praktyki społeczne.', how: 'Co i jak: Dodaj zewnętrzną ewaluację BHP/HR raz w roku.', why: 'Dlaczego: Niezależne spojrzenie ogranicza ryzyko „ślepych punktów”.' }
+                        ]
+                    },
+                    g: {
+                        low: [
+                            { title: 'Diagnoza: Brakuje właściciela ESG i kontroli danych.', how: 'Co i jak: Powołaj właściciela/komitet ESG i wprowadź zasadę 4‑eyes w krytycznych metrykach.', why: 'Dlaczego: Bez odpowiedzialności i kontroli dane nie są audytowalne.' },
+                            { title: 'Diagnoza: Niski poziom ładu.', how: 'Co i jak: Przyjmij politykę antykorupcyjną i włącz ESG do rocznej oceny ryzyk zarządu.', why: 'Dlaczego: To fundament zgodności i oczekiwań rynku.' }
+                        ],
+                        mid: [
+                            { title: 'Diagnoza: Mechanizmy G działają częściowo.', how: 'Co i jak: Powiąż część wynagrodzeń kadry z KPI ESG i prowadź kwartalne przeglądy ryzyk.', why: 'Dlaczego: Zwiększa egzekwowalność celów.' },
+                            { title: 'Diagnoza: Są polityki, brakuje integracji z wynagradzaniem.', how: 'Co i jak: Zdefiniuj 2–3 KPI (np. emisje/E, LTIFR/S) w systemie premiowym.', why: 'Dlaczego: Motywacja domyka ład i redukuje ryzyko greenwashingu.' }
+                        ],
+                        high: [
+                            { title: 'Diagnoza: Ład ESG dojrzały.', how: 'Co i jak: Ustanów coroczny przegląd zewnętrzny ram G i scenariusze stresowe ESG.', why: 'Dlaczego: To wzmacnia odporność i zaufanie inwestorów.' },
+                            { title: 'Diagnoza: Bardzo dobry poziom G.', how: 'Co i jak: Rozszerz raport na poziom grupy i publikuj wyniki KPI ESG kwartalnie.', why: 'Dlaczego: Regularność zwiększa przejrzystość i dyscyplinę.' }
+                        ]
+                    },
+                    sup: {
+                        low: [
+                            { title: 'Diagnoza: Brak danych od dostawców.', how: 'Co i jak: Zidentyfikuj 20 kluczowych dostawców i wyślij krótką ankietę ESG raz w roku.', why: 'Dlaczego: To minimalny poziom due diligence i baza do Scope 3.' },
+                            { title: 'Diagnoza: Łańcuch nieobjęty oceną ESG.', how: 'Co i jak: Dodaj kryteria ESG do zakupów i zacznij od <25% pokrycia, rosnąc kwartalnie.', why: 'Dlaczego: Ograniczysz ryzyka operacyjne i prawne.' }
+                        ],
+                        mid: [
+                            { title: 'Diagnoza: Częściowe pokrycie i roczna częstotliwość.', how: 'Co i jak: Zwiększ pokrycie do 25–75% i przejdź na kwartalne zbieranie danych.', why: 'Dlaczego: Lepsza aktualność danych = realne decyzje.' },
+                            { title: 'Diagnoza: Dane są, ale nieregularne.', how: 'Co i jak: Ustal stały katalog pytań ESG i harmonogram (Q1/Q2/Q3/Q4).', why: 'Dlaczego: Spójność i porównywalność wyników.' }
+                        ],
+                        high: [
+                            { title: 'Diagnoza: Szerokie pokrycie i częste zbieranie.', how: 'Co i jak: Przejdź na ciągłą wymianę danych (API/portal dostawcy) i audytuj ryzykowne kategorie.', why: 'Dlaczego: Zwiększa to przewidywalność dostaw i jakość Scope 3.' },
+                            { title: 'Diagnoza: Łańcuch działa poprawnie.', how: 'Co i jak: Wprowadź program rozwojowy dla dostawców (cele + wsparcie).', why: 'Dlaczego: Podniesiesz poziom całego ekosystemu i obniżysz własne ryzyka.' }
+                        ]
+                    }
+                },
+                en: {
+                    e: {
+                        low: [
+                            { title: 'Diagnosis: Missing energy/emission monitoring.', how: 'What/how: Implement simple energy metering (invoices + meter) and start with Scope 1–2; prepare an environmental policy.', why: 'Why: Without emission data, you cannot plan realistic reduction targets.' },
+                            { title: 'Diagnosis: Environment area is at an early stage.', how: 'What/how: Establish a baseline year, start reporting energy use and include at least 20% renewables in the mix.', why: 'Why: Fast path to visible improvements and ESRS expectations.' }
+                        ],
+                        mid: [
+                            { title: 'Diagnosis: You monitor some KPIs but not all emission scopes.', how: 'What/how: Extend scope to 1–2 (target 3), introduce quarterly collection and a reduction plan by year X.', why: 'Why: A fuller environmental picture and predictable targets.' },
+                            { title: 'Diagnosis: Stable basics, missing goals and RES.', how: 'What/how: Define yearly targets (kWh/product, tCO₂e/year) and raise RES share to ≥20%.', why: 'Why: Operational targets enforce real improvement; RES lowers Scope 2.' }
+                        ],
+                        high: [
+                            { title: 'Diagnosis: E monitoring is mature.', how: 'What/how: Expand Scope 3 for key categories and add external assurance for selected metrics.', why: 'Why: Increases credibility and audit readiness.' },
+                            { title: 'Diagnosis: High control over E data.', how: 'What/how: Move energy/emissions collection to continuous mode (IoT/ETL) and target ≥50% RES.', why: 'Why: Continuity = better operational decisions and cost advantage.' }
+                        ]
+                    },
+                    s: {
+                        low: [
+                            { title: 'Diagnosis: Missing policies and HR data.', how: 'What/how: Introduce whistleblowing, basic HR KPIs (turnover, absence) and safety incident tracking.', why: 'Why: Core of safety and compliance (incl. whistleblower directive).' },
+                            { title: 'Diagnosis: Social area is unorganized.', how: 'What/how: Prepare a DEI policy and ≥8h training/person/year; start an H&S incident register.', why: 'Why: Builds culture and reduces operational risk.' }
+                        ],
+                        mid: [
+                            { title: 'Diagnosis: Social basics work, but lack depth.', how: 'What/how: Measure pay gap and run regular employee surveys.', why: 'Why: Qualitative and equality data increase trust and retention.' },
+                            { title: 'Diagnosis: Partial HR report, missing full H&S KPIs.', how: 'What/how: Define LTIFR/TRIR and training targets (≥12h/person/year).', why: 'Why: Industry standard and quick improvement of S results.' }
+                        ],
+                        high: [
+                            { title: 'Diagnosis: Strong S area.', how: 'What/how: Scale DEI programs to management and publish annual S goals.', why: 'Why: Transparency strengthens employer brand.' },
+                            { title: 'Diagnosis: Stable social practices.', how: 'What/how: Add external H&S/HR evaluation once a year.', why: 'Why: Independent view reduces blind‑spot risk.' }
+                        ]
+                    },
+                    g: {
+                        low: [
+                            { title: 'Diagnosis: No ESG owner and data controls.', how: 'What/how: Appoint an ESG owner/committee and introduce 4‑eyes rule for critical metrics.', why: 'Why: Without responsibility and control, data is not auditable.' },
+                            { title: 'Diagnosis: Low governance level.', how: 'What/how: Adopt an anti‑corruption policy and include ESG in the board annual risk review.', why: 'Why: Foundation of compliance and market expectations.' }
+                        ],
+                        mid: [
+                            { title: 'Diagnosis: Governance works partially.', how: 'What/how: Link part of management compensation to ESG KPIs and run quarterly risk reviews.', why: 'Why: Increases enforceability of goals.' },
+                            { title: 'Diagnosis: Policies exist, missing link to compensation.', how: 'What/how: Define 2–3 KPIs (e.g., emissions/E, LTIFR/S) in the bonus system.', why: 'Why: Motivation completes governance and reduces greenwashing risk.' }
+                        ],
+                        high: [
+                            { title: 'Diagnosis: Mature ESG governance.', how: 'What/how: Establish an annual external review of G framework and ESG stress scenarios.', why: 'Why: Strengthens resilience and investor trust.' },
+                            { title: 'Diagnosis: Very good G level.', how: 'What/how: Extend reporting to group level and publish ESG KPI results quarterly.', why: 'Why: Regularity increases transparency and discipline.' }
+                        ]
+                    },
+                    sup: {
+                        low: [
+                            { title: 'Diagnosis: No supplier data.', how: 'What/how: Identify 20 key suppliers and send a short ESG questionnaire once a year.', why: 'Why: Minimal due diligence and foundation for Scope 3.' },
+                            { title: 'Diagnosis: Supply chain not covered by ESG assessment.', how: 'What/how: Add ESG criteria to procurement and start with <25% coverage, growing quarterly.', why: 'Why: Reduces operational and legal risks.' }
+                        ],
+                        mid: [
+                            { title: 'Diagnosis: Partial coverage and annual frequency.', how: 'What/how: Raise coverage to 25–75% and move to quarterly data collection.', why: 'Why: Fresher data = real decisions.' },
+                            { title: 'Diagnosis: Data exists but irregular.', how: 'What/how: Set a stable ESG question catalog and schedule (Q1/Q2/Q3/Q4).', why: 'Why: Consistency and comparability of results.' }
+                        ],
+                        high: [
+                            { title: 'Diagnosis: Broad coverage and frequent collection.', how: 'What/how: Move to continuous data exchange (API/supplier portal) and audit risky categories.', why: 'Why: Increases supply predictability and Scope 3 quality.' },
+                            { title: 'Diagnosis: Supply chain works correctly.', how: 'What/how: Introduce a supplier development program (targets + support).', why: 'Why: Lifts ecosystem level and lowers your risks.' }
+                        ]
+                    }
+                }
+            };
+
+            const SHORT_RECOMMENDATIONS_CATEGORIES = {
+                pl: {
+                    e: {
+                        low: [
+                            { title: 'Brak monitoringu energii/emisji.', how: 'Prosty pomiar + Scope 1–2; polityka środowiskowa.', why: 'Bez danych nie ma celów.' },
+                            { title: 'E na starcie.', how: 'Ustal rok bazowy, raportuj energię, ≥20% OZE.', why: 'Szybka poprawa i zgodność.' }
+                        ],
+                        mid: [
+                            { title: 'Częściowy monitoring.', how: 'Rozszerz Scope 1–2→3; kwartalne zbieranie; plan redukcji.', why: 'Pełniejszy obraz i przewidywalność.' },
+                            { title: 'Brak celów/OZE.', how: 'Zdefiniuj cele roczne; OZE ≥20%.', why: 'Cele wymuszają poprawę; OZE obniża Scope 2.' }
+                        ],
+                        high: [
+                            { title: 'Dojrzały monitoring E.', how: 'Rozwiń Scope 3; zewnętrzna weryfikacja.', why: 'Wiarygodność i gotowość na audyt.' },
+                            { title: 'Wysoka kontrola E.', how: 'Ciągłe zbieranie (IoT/ETL); OZE ≥50%.', why: 'Lepsze decyzje i przewaga kosztowa.' }
+                        ]
+                    },
+                    s: {
+                        low: [
+                            { title: 'Brak polityk/HR danych.', how: 'Whistleblowing, podstawowe KPI HR, rejestr wypadków.', why: 'Bezpieczeństwo i zgodność.' },
+                            { title: 'S nieuporządkowany.', how: 'Polityka DEI; ≥8h szkoleń/os.; rejestr BHP.', why: 'Kultura i niższe ryzyko.' }
+                        ],
+                        mid: [
+                            { title: 'Podstawy są.', how: 'Pomiar luki płacowej, regularne ankiety.', why: 'Wyższe zaufanie i retencja.' },
+                            { title: 'Brak pełnych KPI BHP.', how: 'LTIFR/TRIR; ≥12h szkoleń/os.', why: 'Standard branżowy, szybka poprawa.' }
+                        ],
+                        high: [
+                            { title: 'Silny obszar S.', how: 'Skaluj DEI na kadrę; publikuj cele.', why: 'Silna marka pracodawcy.' },
+                            { title: 'Stabilne praktyki S.', how: 'Zewnętrzna ewaluacja HR/BHP raz w roku.', why: 'Mniej „ślepych punktów”.' }
+                        ]
+                    },
+                    g: {
+                        low: [
+                            { title: 'Brak właściciela ESG/kontroli.', how: 'Właściciel/komitet; zasada 4‑eyes.', why: 'Dane muszą być audytowalne.' },
+                            { title: 'Niski ład.', how: 'Polityka antykorupcyjna; ESG w ocenie ryzyk.', why: 'Fundament zgodności.' }
+                        ],
+                        mid: [
+                            { title: 'Mechanizmy częściowe.', how: 'Powiąż premię z KPI ESG; kwartalne przeglądy.', why: 'Większa egzekwowalność celów.' },
+                            { title: 'Polityki bez powiązań.', how: '2–3 KPI w systemie premiowym.', why: 'Domknięty ład, mniej greenwashingu.' }
+                        ],
+                        high: [
+                            { title: 'Dojrzały ład ESG.', how: 'Roczny przegląd zewnętrzny; stres‑scenariusze.', why: 'Większa odporność i zaufanie.' },
+                            { title: 'Bardzo dobry poziom G.', how: 'Raport na poziom grupy; KPI kwartalnie.', why: 'Regularność = przejrzystość.' }
+                        ]
+                    },
+                    sup: {
+                        low: [
+                            { title: 'Brak danych od dostawców.', how: '20 kluczowych; krótka ankieta raz/rok.', why: 'Minimum due diligence; baza Scope 3.' },
+                            { title: 'Zakupy bez ESG.', how: 'Kryteria ESG; start <25% pokrycia.', why: 'Mniej ryzyk operacyjnych/prawnych.' }
+                        ],
+                        mid: [
+                            { title: 'Częściowe pokrycie.', how: '25–75% i kwartalne zbieranie.', why: 'Aktualniejsze dane = decyzje.' },
+                            { title: 'Dane nieregularne.', how: 'Stały katalog pytań i harmonogram.', why: 'Spójność i porównywalność.' }
+                        ],
+                        high: [
+                            { title: 'Szerokie pokrycie.', how: 'Ciągła wymiana (API/portal), audyty ryzyka.', why: 'Lepsza przewidywalność i Scope 3.' },
+                            { title: 'Łańcuch działa.', how: 'Program rozwojowy dostawców.', why: 'Wyższy poziom ekosystemu, niższe ryzyka.' }
+                        ]
+                    }
+                },
+                en: {
+                    e: {
+                        low: [
+                            { title: 'No energy/emission monitoring.', how: 'Simple metering + Scope 1–2; env. policy.', why: 'No data → no targets.' },
+                            { title: 'E at early stage.', how: 'Baseline year, report energy, ≥20% RES.', why: 'Fast improvement and ESRS.' }
+                        ],
+                        mid: [
+                            { title: 'Partial monitoring.', how: 'Extend 1–2→3; quarterly data; reduction plan.', why: 'Fuller view and predictability.' },
+                            { title: 'Missing goals/RES.', how: 'Yearly targets; RES ≥20%.', why: 'Targets drive change; RES lowers Scope 2.' }
+                        ],
+                        high: [
+                            { title: 'Mature E monitoring.', how: 'Expand Scope 3; external assurance.', why: 'Credibility and audit‑ready.' },
+                            { title: 'High E control.', how: 'Continuous collection (IoT/ETL); RES ≥50%.', why: 'Better ops and cost edge.' }
+                        ]
+                    },
+                    s: {
+                        low: [
+                            { title: 'No policies/HR data.', how: 'Whistleblowing, basic HR KPIs, incident log.', why: 'Safety and compliance.' },
+                            { title: 'Unorganized S.', how: 'DEI policy; ≥8h training; H&S register.', why: 'Culture and lower risk.' }
+                        ],
+                        mid: [
+                            { title: 'Basics OK, lacks depth.', how: 'Pay‑gap measure; regular surveys.', why: 'Trust and retention.' },
+                            { title: 'Partial HR; missing H&S.', how: 'LTIFR/TRIR; ≥12h/person.', why: 'Industry standard; quick wins.' }
+                        ],
+                        high: [
+                            { title: 'Strong S.', how: 'Scale DEI to management; publish goals.', why: 'Employer brand.' },
+                            { title: 'Stable practices.', how: 'External HR/H&S review yearly.', why: 'Fewer blind spots.' }
+                        ]
+                    },
+                    g: {
+                        low: [
+                            { title: 'No ESG owner/controls.', how: 'Owner/committee; 4‑eyes rule.', why: 'Auditable data needs ownership.' },
+                            { title: 'Low governance.', how: 'Anti‑corruption policy; ESG in risk review.', why: 'Compliance foundation.' }
+                        ],
+                        mid: [
+                            { title: 'Partial mechanisms.', how: 'Link pay to ESG KPIs; quarterly reviews.', why: 'Enforceability.' },
+                            { title: 'Policies not linked.', how: '2–3 KPIs in bonus system.', why: 'Closed governance; less greenwashing.' }
+                        ],
+                        high: [
+                            { title: 'Mature ESG governance.', how: 'Annual external review; stress tests.', why: 'Resilience and trust.' },
+                            { title: 'Very good G.', how: 'Group‑level report; quarterly KPIs.', why: 'Transparency and discipline.' }
+                        ]
+                    },
+                    sup: {
+                        low: [
+                            { title: 'No supplier data.', how: 'Top 20 suppliers; short survey yearly.', why: 'Min due diligence; Scope 3 base.' },
+                            { title: 'No ESG in procurement.', how: 'Add ESG criteria; start <25% coverage.', why: 'Lower ops/legal risks.' }
+                        ],
+                        mid: [
+                            { title: 'Partial coverage.', how: 'Raise to 25–75%; quarterly.', why: 'Fresher data = better decisions.' },
+                            { title: 'Irregular data.', how: 'Stable question set and cadence.', why: 'Consistency and comparability.' }
+                        ],
+                        high: [
+                            { title: 'Broad coverage.', how: 'Continuous exchange (API/portal); audit risks.', why: 'Predictability; Scope 3 quality.' },
+                            { title: 'Chain works.', how: 'Supplier development program.', why: 'Ecosystem up; risks down.' }
+                        ]
+                    }
+                }
+            };
+
+            // ===== Country dropdown =====
+            const COUNTRIES = [
+                'Poland','United Kingdom','United States','Germany','France','Spain','Italy','Netherlands','Sweden','Norway','Finland','Denmark','Czechia','Slovakia','Ukraine','Lithuania','Latvia','Estonia','Austria','Belgium','Portugal','Greece','Ireland','Switzerland','Romania','Bulgaria','Croatia','Slovenia','Hungary','Serbia','Bosnia and Herzegovina','North Macedonia','Albania','Montenegro','Iceland','Canada','Mexico','Brazil','Argentina','Chile','Peru','Colombia','Australia','New Zealand','Japan','South Korea','China','India','Thailand','Vietnam','Singapore','Malaysia','Indonesia','Philippines','Turkey','Israel','Saudi Arabia','UAE','Qatar','Egypt','South Africa','Morocco','Tunisia'
+            ];
+            function initCountryDropdown() {
+                const input = qs('country-input');
+                const list = qs('country-list');
+                const wrap = qs('country-dropdown');
+                if (!input || !list || !wrap) return;
+                const render = (q='') => {
+                    const lc = q.toLowerCase();
+                    list.innerHTML = '';
+                    COUNTRIES.filter(c => c.toLowerCase().includes(lc)).slice(0, 200).forEach(c => {
+                        const item = document.createElement('div');
+                        item.textContent = c;
+                        item.style.padding = '8px 12px';
+                        item.style.cursor = 'pointer';
+                        item.addEventListener('click', () => { input.value = c; wrap.style.display = 'none'; });
+                        item.addEventListener('mouseenter', () => item.style.background = '#f3f4f6');
+                        item.addEventListener('mouseleave', () => item.style.background = '');
+                        list.appendChild(item);
+                    });
+                };
+                input.addEventListener('click', () => { wrap.style.display = 'block'; render(''); });
+                input.addEventListener('input', (e) => { wrap.style.display = 'block'; render(e.target.value || ''); });
+                document.addEventListener('click', (e) => { if (!wrap.contains(e.target) && e.target !== input) wrap.style.display = 'none'; });
+            }
+
+            // Bind modal controls once DOM ready
+            document.addEventListener('DOMContentLoaded', () => {
+                const closeBtn = qs('survey-close');
+                const startBtn = qs('survey-start');
+                const skipBtn = qs('survey-skip');
+                const prevBtn = qs('survey-prev');
+                const submitBtn = qs('survey-submit');
+                const overlay = qs('survey-modal');
+                if (closeBtn) closeBtn.addEventListener('click', closeSurveyModal);
+                if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) closeSurveyModal(); });
+                if (startBtn) startBtn.addEventListener('click', () => showStep('form'));
+                if (skipBtn) skipBtn.addEventListener('click', closeSurveyModal);
+                if (prevBtn) prevBtn.addEventListener('click', () => showStep('form'));
+                if (submitBtn) submitBtn.addEventListener('click', renderResults);
+                initCountryDropdown();
+            });
         })();
     </script>
 <script id="dhws-dataInjector" src="public/dhws-data-injector.js"></script>
