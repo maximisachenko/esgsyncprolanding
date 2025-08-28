@@ -7,6 +7,9 @@
     <link href="css/main.css" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
     <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="pdf-template.js"></script>
     <style>
         /* Responsive menu styles */
         @media (min-width: 1024px) {
@@ -506,24 +509,9 @@
 		@keyframes blink { 50% { opacity: 0; } }
     </style>
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fmaximisach2862back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.5"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-        integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <!-- Typed.js for headline typing -->
 <script src="https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js"></script>
-<script>
-// Fallback loader if primary CDN blocked by SRI or network
-window.addEventListener('DOMContentLoaded', function() {
-    try {
-        if (!window.jspdf || !window.jspdf.jsPDF) {
-            var s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
-            s.crossOrigin = 'anonymous';
-            document.head.appendChild(s);
-        }
-    } catch (e) {}
-});
-</script>
 </head>
 <body class="bg-white font-inter">
     <!-- Header -->
@@ -1430,7 +1418,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 "esgEmail.button.sent": "Sent",
                 "esgEmail.validation.invalidEmail": "Enter a valid email address.",
                 "esgEmail.endpointNotConfigured": "Endpoint is not configured. Please contact support.",
-                "esgEmail.successMessage": "Done! Check your inbox — we’ve sent a link to your report.",
+                "esgEmail.successMessage": "Done! Check your inbox — we've sent a link to your report.",
                 "esgEmail.errorMessage": "Failed to save the address. Please try again.",
 
                 // Survey modal
@@ -3108,287 +3096,142 @@ window.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
                 showStep('results');
-                // After showing results, generate PDF and email only (no local download)
-                try { generateAndSendPdf(r, { alsoDownload: false }); } catch (e) { console.warn('PDF generation failed', e); }
+                // After showing results, generate PDF and download it
+                try { generateAndDownloadPdf(r); } catch (e) { console.warn('PDF generation failed', e); }
             }
-            // ===== PDF generation and email via Apps Script =====
-            async function generateAndSendPdf(scores, opts={ alsoDownload: false }) {
+            // ===== PDF generation and download =====
+            async function generateAndDownloadPdf(scores) {
                 try {
-                    const jsPDF = window.jspdf.jsPDF;
-                    if (!jsPDF) throw new Error('jsPDF not loaded');
-                    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    const pageHeight = doc.internal.pageSize.getHeight();
-                    const margin = 48; let y = margin;
-                    // extra gutter to guarantee no horizontal overflow in viewers
-                    const contentWidth = pageWidth - margin * 2 - 24;
-                    const lineHeight = 16;
+                    console.log('Starting PDF generation...', scores);
+                    if (!window.html2canvas) throw new Error('html2canvas not loaded');
+                    if (!window.jspdf) throw new Error('jsPDF not loaded');
+                    console.log('Libraries loaded successfully');
 
                     const t = (k, fb='') => (translations[currentLanguage] && translations[currentLanguage][k]) || fb || k;
                     const emailInput = document.getElementById('lead-email');
                     const email = (emailInput ? emailInput.value.trim() : '') || (window.LAST_LEAD_EMAIL || '');
 
-                    // Ensure Unicode-capable font is embedded to avoid broken spacing
-                    try { await ensurePdfFontLoaded(doc); } catch(_) {}
-                    const FONT_FAMILY = (doc.getFontList && (doc.getFontList()['DejaVuSans'] ? 'DejaVuSans' : (doc.getFontList()['NotoSans'] ? 'NotoSans' : 'Roboto')));
-                    const useFont = (weight='normal') => { try { doc.setFont(FONT_FAMILY, weight); } catch(_) {} };
-                    // neutral tracking/leading for consistent glyph spacing
-                    try { doc.setCharSpace(0); } catch(_) {}
-                    try { doc.setLineHeightFactor(1.2); } catch(_) {}
+                    // Collect client details from the survey form
+                    const clientDetails = {
+                        industry: document.querySelector('select[name="industry"]')?.selectedOptions[0]?.text || '',
+                        employees: document.querySelector('select[name="employees"]')?.selectedOptions[0]?.text || '',
+                        country: document.querySelector('input[name="country"]')?.value || '',
+                        revenue: document.querySelector('select[name="revenue"]')?.selectedOptions[0]?.text || '',
+                        csrd: document.querySelector('select[name="csrd"]')?.selectedOptions[0]?.text || '',
+                        scopeLevel: document.querySelector('select[name="scopeLevel"]')?.selectedOptions[0]?.text || '',
+                        email: email,
+                        comment: document.querySelector('textarea[name="open_comment"]')?.value || ''
+                    };
 
-                    // Header band only (logo disabled)
-                    try {
-                        // gradient effect by stripes
-                        const bandH = 68;
-                        for (let i = 0; i < bandH; i+=2) {
-                            const g = 190 - Math.floor(i * 1.2);
-                            doc.setFillColor(149, 206, 36);
-                            if (i > bandH/2) doc.setFillColor(135, 190, 30);
-                            doc.rect(0, i, pageWidth, 2, 'F');
-                        }
-                        // header title on band
-                        doc.setTextColor(255,255,255);
-                        useFont('bold'); doc.setFontSize(18);
-                        try { doc.setCharSpace(0); } catch(_) {}
-                        doc.text((t('survey.title', currentLanguage==='pl' ? 'Szybka ocena ESG' : 'ESG Quick Assessment')), margin + 48, 35);
-                        doc.setTextColor(0,0,0);
-                        y = 92;
-                    } catch(_) { /* ignore header errors */ }
+                    console.log('Client details collected:', clientDetails);
 
-                    // Title
-                    useFont('bold'); doc.setFontSize(16);
-                    doc.text((t('survey.result.title','Assessment result')), margin, y); y += 8;
-                    useFont('normal'); doc.setFontSize(11);
-                    const overallLabel = t('survey.result.overall','Score');
-                    const interpretLabel = t('survey.result.interpretationLabel','Interpretation');
+                    // Create HTML content for PDF
                     const levels = {
                         beginner: t('survey.level.beginner', currentLanguage === 'pl' ? 'Początkowy poziom' : 'Beginner level'),
                         intermediate: t('survey.level.intermediate', currentLanguage === 'pl' ? 'Średni poziom' : 'Intermediate level'),
                         advanced: t('survey.level.advanced', currentLanguage === 'pl' ? 'Zaawansowany poziom' : 'Advanced level')
                     };
                     const interp = scores.percent >= 61 ? levels.advanced : (scores.percent >= 31 ? levels.intermediate : levels.beginner);
-                    y += 16; // spacing after title
-                    // highlight card for overall
-                    doc.setDrawColor(230, 240, 220);
-                    doc.setFillColor(244, 251, 235);
-                    doc.setLineWidth(0.6);
-                    doc.roundedRect(margin-6, y-12, pageWidth - margin*2 + 12, 60, 8, 8, 'FD');
-                    useFont('bold');
-                    doc.text(`${overallLabel}: ${scores.total}/85 (${scores.percent}%)`, margin, y);
-                    useFont('normal');
-                    y += 16; doc.text(`${interpretLabel}: ${interp}`, margin, y); y += 22;
-
-                    // Category scores
+                    
                     const supplyLabel = t('survey.result.cat.sup','Supply');
-                    const categoriesHeader = `E / S / G / ${supplyLabel}`;
-                    useFont('bold'); doc.text(categoriesHeader, margin, y);
-                    // divider
-                    doc.setDrawColor(230,230,230);
-                    doc.line(margin, y+4, pageWidth - margin, y+4);
-                    y += 14; useFont('normal');
-                    // Single-column scores to avoid overflow in narrow layouts
-                    y = wrapText(doc, `E: ${scores.e}/25`, margin, y, contentWidth, lineHeight, margin, pageHeight);
-                    y = wrapText(doc, `S: ${scores.s}/25`, margin, y, contentWidth, lineHeight, margin, pageHeight);
-                    y = wrapText(doc, `G: ${scores.g}/20`, margin, y, contentWidth, lineHeight, margin, pageHeight);
-                    y = wrapText(doc, `${supplyLabel}: ${scores.sup}/15`, margin, y, contentWidth, lineHeight, margin, pageHeight);
-                    y += 6;
-
-                    // Recommendations (short block per overall level)
-                    const overall = scores.percent;
-                    const rec = pickRecommendations(overall);
+                    const overallLabel = t('survey.result.overall','Score');
+                    const interpretLabel = t('survey.result.interpretationLabel','Interpretation');
+                    
+                    // Get recommendations
+                    const rec = pickRecommendations(scores.percent);
                     const recTitle = templateString(rec.title, { score_overall: String(scores.percent) });
                     const recHow = templateString(rec.how, { score_overall: String(scores.percent) });
                     const recWhy = templateString(rec.why, { score_overall: String(scores.percent) });
                     const recHeader = currentLanguage === 'pl' ? 'Rekomendacje' : 'Recommendations';
-                    useFont('bold'); try { doc.setCharSpace(0); } catch(_) {}
-                    doc.text(recHeader, margin, y);
-                    y += 10; useFont('normal'); try { doc.setCharSpace(0); } catch(_) {}
-                    // Render recommendation as single-column labeled paragraphs; also hard-truncate overly long strings
-                    const prevSize = doc.getFontSize();
-                    const recBodySize = (currentLanguage === 'pl') ? 9.5 : 10;
-                    const recLineHeight = recBodySize + 2.0;
-                    doc.setFontSize(recBodySize);
-                    const recTitleShort = shortenForPdf(recTitle, currentLanguage, 180);
-                    const recHowShort = shortenForPdf(recHow, currentLanguage, 180);
-                    const recWhyShort = shortenForPdf(recWhy, currentLanguage, 180);
-                    // Diagnoza / Diagnosis
-                    useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Diagnoza:' : 'Diagnosis:'), margin, y, contentWidth, recLineHeight, margin, pageHeight);
-                    useFont('normal'); y = wrapText(doc, recTitleShort, margin, y, contentWidth, recLineHeight, margin, pageHeight) + 3;
-                    // Co i jak / What-how
-                    useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Co i jak:' : 'What/how:'), margin, y, contentWidth, recLineHeight, margin, pageHeight);
-                    useFont('normal'); y = wrapText(doc, recHowShort, margin, y, contentWidth, recLineHeight, margin, pageHeight) + 3;
-                    // Dlaczego / Why
-                    useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Dlaczego:' : 'Why:'), margin, y, contentWidth, recLineHeight, margin, pageHeight);
-                    useFont('normal'); y = wrapText(doc, recWhyShort, margin, y, contentWidth, recLineHeight, margin, pageHeight) + 10;
-                    doc.setFontSize(prevSize);
 
-                    // Category-specific recommendations
-                    const ePct = Math.round((scores.e / 25) * 100);
-                    const sPct = Math.round((scores.s / 25) * 100);
-                    const gPct = Math.round((scores.g / 20) * 100);
-                    const supPct = Math.round((scores.sup / 15) * 100);
+                    console.log('Creating HTML content...');
+                    // Generate HTML content using the template function with client details
+                    const htmlContent = generatePdfHtmlContent(scores, currentLanguage, t, rec, clientDetails);
 
-                    const isPL = (currentLanguage === 'pl');
-                    const catBlocks = [
-                        { key: 'e', label: isPL ? 'E – Środowisko' : 'E – Environment', score: scores.e, max: 25, pct: ePct },
-                        { key: 's', label: isPL ? 'S – Społeczne' : 'S – Social', score: scores.s, max: 25, pct: sPct },
-                        { key: 'g', label: isPL ? 'G – Ład korporacyjny' : 'G – Governance', score: scores.g, max: 20, pct: gPct },
-                        { key: 'sup', label: isPL ? 'Łańcuch dostaw i dane' : 'Supply chain & Data', score: scores.sup, max: 15, pct: supPct },
-                    ];
-
-                    for (const blk of catBlocks) {
-                        const catRec = pickCategoryRecommendation(blk.key, blk.pct);
-                        if (!catRec) continue;
-                        // Category as single-column with labeled paragraphs (no background box)
-                        useFont('bold');
-                        y = wrapText(doc, `${blk.label}: ${blk.score}/${blk.max} (${blk.pct}%)`, margin, y, contentWidth, lineHeight, margin, pageHeight) + 2;
-                        const prevCatSize2 = doc.getFontSize();
-                        const catSize = (currentLanguage === 'pl') ? 9.5 : 10;
-                        const catLH = catSize + 2.0;
-                        doc.setFontSize(catSize);
-                        const catTitleShort = shortenForPdf(catRec.title, currentLanguage, 160);
-                        const catHowShort = shortenForPdf(catRec.how, currentLanguage, 160);
-                        const catWhyShort = shortenForPdf(catRec.why, currentLanguage, 160);
-                        useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Diagnoza:' : 'Diagnosis:'), margin, y, contentWidth, catLH, margin, pageHeight);
-                        useFont('normal'); y = wrapText(doc, catTitleShort, margin, y, contentWidth, catLH, margin, pageHeight) + 2;
-                        useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Co i jak:' : 'What/how:'), margin, y, contentWidth, catLH, margin, pageHeight);
-                        useFont('normal'); y = wrapText(doc, catHowShort, margin, y, contentWidth, catLH, margin, pageHeight) + 2;
-                        useFont('bold'); y = wrapText(doc, (currentLanguage==='pl' ? 'Dlaczego:' : 'Why:'), margin, y, contentWidth, catLH, margin, pageHeight);
-                        useFont('normal'); y = wrapText(doc, catWhyShort, margin, y, contentWidth, catLH, margin, pageHeight) + 8;
-                        doc.setFontSize(prevCatSize2);
-                        if (y > pageHeight - 80) { doc.addPage(); y = margin; }
-                    }
-
-                    // Prepare outputs once
-                    const dataUri = doc.output('datauristring');
-                    const base64 = (dataUri.split(',')[1]) || '';
-                    const pdfBlob = doc.output('blob');
-
-                    // Render and upload to Apps Script (for emailing)
-                    const form = new FormData();
-                    form.append('action', 'email_pdf');
-                    form.append('lang', currentLanguage);
-                    form.append('email', email);
-                    form.append('filename', `ESG_Assessment_${Date.now()}.pdf`);
-                    form.append('pdf', pdfBlob, 'report.pdf');
-                    form.append('pdfBase64', base64);
-                    try {
-                        if (!email) throw new Error('Email missing');
-                        if (String(window.location.protocol).startsWith('file')) throw new Error('Local file protocol, use iframe');
-                        const res = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: form });
-                        if (!res.ok) throw new Error('Email send failed');
-                    } catch (netErr) {
-                        console.warn('Email send fallback via iframe', netErr);
-                        try { submitPdfViaIframe({ action: 'email_pdf', lang: currentLanguage, email, filename: `ESG_Assessment_${Date.now()}.pdf`, pdfBase64: base64 }); } catch(_) {}
-                    }
-                } catch (e) {
-                    console.warn('generateAndSendPdf error', e);
-                }
-            }
-
-            function wrapText(doc, text, x, y, maxWidth, lineHeight = 14, topMargin = 48, pageHeight = 842) {
-                const lines = doc.splitTextToSize(String(text || ''), maxWidth);
-                for (const line of lines) {
-                    if (y > pageHeight - (topMargin + lineHeight)) {
-                        doc.addPage();
-                        y = topMargin;
-                    }
-                    doc.text(line, x, y);
-                    y += lineHeight;
-                }
-                return y;
-            }
-
-            async function getImageDataUrl(src) {
-                try {
-                    const res = await fetch(src);
-                    if (!res.ok) return '';
-                    const blob = await res.blob();
-                    return await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = () => resolve('');
-                        reader.readAsDataURL(blob);
+                    console.log('HTML Content created:', htmlContent);
+                    console.log('HTML Content length:', htmlContent.length);
+                    
+                    // Create temporary DOM element for PDF generation
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = htmlContent;
+                    tempDiv.style.position = 'absolute';
+                    tempDiv.style.left = '-9999px';
+                    tempDiv.style.top = '-9999px';
+                    tempDiv.style.width = '800px';
+                    tempDiv.style.backgroundColor = '#ffffff';
+                    document.body.appendChild(tempDiv);
+                    
+                    console.log('Temp div created:', tempDiv);
+                    console.log('Temp div innerHTML length:', tempDiv.innerHTML.length);
+                    console.log('Temp div children count:', tempDiv.children.length);
+                    console.log('Temp div first child:', tempDiv.firstElementChild);
+                    
+                    // Wait a bit for DOM to settle
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    console.log('Converting HTML to canvas...');
+                    
+                    // Convert HTML to canvas using html2canvas
+                    const canvas = await html2canvas(tempDiv, {
+                        scale: 2,
+                        useCORS: false,
+                        allowTaint: false,
+                        backgroundColor: '#ffffff',
+                        width: 800,
+                        height: tempDiv.scrollHeight,
+                        scrollX: 0,
+                        scrollY: 0,
+                        logging: false,
+                        removeContainer: true
                     });
-                } catch(_) { return ''; }
-            }
-
-            async function ensurePdfFontLoaded(doc) {
-                // Built-in helvetica can cause odd spacing; embed a Unicode font (prefer DejaVu Sans, then NotoSans, fallback Roboto)
-                try {
-                    if (doc.getFontList && (doc.getFontList()["DejaVuSans"] || doc.getFontList()["NotoSans"] || doc.getFontList()["Roboto"])) { return; }
-                } catch(_) {}
-                // Prefer DejaVu Sans (broad glyph coverage), then NotoSans, then Roboto
-                const dejavuReg = 'https://cdn.jsdelivr.net/gh/dejavu-fonts/dejavu-fonts-ttf/ttf/DejaVuSans.ttf';
-                const dejavuBold = 'https://cdn.jsdelivr.net/gh/dejavu-fonts/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf';
-                const notoReg = 'https://cdn.jsdelivr.net/gh/google/fonts/ofl/notosans/NotoSans-Regular.ttf';
-                const notoBold = 'https://cdn.jsdelivr.net/gh/google/fonts/ofl/notosans/NotoSans-Bold.ttf';
-                const robotoReg = 'https://cdn.jsdelivr.net/gh/google/fonts/apache/roboto/Roboto-Regular.ttf';
-                const robotoBold = 'https://cdn.jsdelivr.net/gh/google/fonts/apache/roboto/Roboto-Bold.ttf';
-                const [regB64, boldB64] = await Promise.all([
-                    fetchAsBase64(dejavuReg).catch(()=> fetchAsBase64(notoReg).catch(()=> fetchAsBase64(robotoReg).catch(()=>''))),
-                    fetchAsBase64(dejavuBold).catch(()=> fetchAsBase64(notoBold).catch(()=> fetchAsBase64(robotoBold).catch(()=>''))),
-                ]);
-                try {
-                    if (regB64) {
-                        doc.addFileToVFS('DejaVuSans.ttf', regB64);
-                        doc.addFont('DejaVuSans.ttf', 'DejaVuSans', 'normal');
-                        doc.addFileToVFS('NotoSans-Regular.ttf', regB64);
-                        doc.addFont('NotoSans-Regular.ttf', 'NotoSans', 'normal');
-                        doc.addFileToVFS('Roboto-Regular.ttf', regB64);
-                        doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+                    
+                    console.log('Canvas created:', canvas);
+                    console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+                    
+                    // Clean up temporary element
+                    document.body.removeChild(tempDiv);
+                    
+                    // Convert canvas to PDF using jsPDF
+                    console.log('Converting canvas to PDF...');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    
+                    // Calculate dimensions
+                    const imgWidth = 210; // A4 width in mm
+                    const pageHeight = 297; // A4 height in mm
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    // Add first page
+                    pdf.addImage(canvas, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    // Add additional pages if needed
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(canvas, 'JPEG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
                     }
-                    if (boldB64) {
-                        doc.addFileToVFS('DejaVuSans-Bold.ttf', boldB64);
-                        doc.addFont('DejaVuSans-Bold.ttf', 'DejaVuSans', 'bold');
-                        doc.addFileToVFS('NotoSans-Bold.ttf', boldB64);
-                        doc.addFont('NotoSans-Bold.ttf', 'NotoSans', 'bold');
-                        doc.addFileToVFS('Roboto-Bold.ttf', boldB64);
-                        doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold');
-                    }
-                } catch(_) {}
-            }
-
-            async function fetchAsBase64(url) {
-                const res = await fetch(url);
-                if (!res.ok) return '';
-                const blob = await res.blob();
-                return await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        const result = String(reader.result || '');
-                        const base64 = result.split(',')[1] || '';
-                        resolve(base64);
-                    };
-                    reader.onerror = () => resolve('');
-                    reader.readAsDataURL(blob);
-                });
-            }
-
-            // Preload assets (logo) early to preserve user gesture for downloads
-            (function preloadLogo() {
-                const url = 'assets/images/img_img_48x48.png';
-                try {
-                    getImageDataUrl(url).then((data) => { try { window.LOGO_DATA_URL = data || ''; } catch(_) {} });
-                } catch(_) {}
-            })();
-
-            function submitPdfViaIframe(fields) {
-                const url = GOOGLE_APPS_SCRIPT_WEB_APP_URL;
-                if (!url) return;
-                const form = document.createElement('form');
-                form.action = url;
-                form.method = 'POST';
-                form.target = 'lead-target';
-                Object.keys(fields || {}).forEach(k => {
-                    const inp = document.createElement('input');
-                    inp.type = 'hidden';
-                    inp.name = k;
-                    inp.value = String(fields[k] ?? '');
-                    form.appendChild(inp);
-                });
-                document.body.appendChild(form);
-                try { form.submit(); } finally { setTimeout(() => { try { document.body.removeChild(form); } catch(_) {} }, 500); }
+                    
+                    console.log('PDF created successfully');
+                    
+                    // Convert PDF to base64 and send to server
+                    console.log('Converting PDF to base64...');
+                    const pdfBase64 = pdf.output('datauristring').split(',')[1];
+                    console.log('PDF converted to base64, length:', pdfBase64.length);
+                    
+                    // Send PDF to server
+                    console.log('Sending PDF to server...');
+                    await sendPdfToServer(pdfBase64, clientDetails.email, currentLanguage);
+                    console.log('PDF sent to server successfully');
+                } catch (e) {
+                    console.error('generateAndDownloadPdf error', e);
+                    console.error('Error stack:', e.stack);
+                    // Show error to user
+                    alert('PDF generation failed: ' + e.message);
+                }
             }
 
             function templateString(str, map) {
@@ -3401,6 +3244,127 @@ window.addEventListener('DOMContentLoaded', function() {
                 if (!maxLen || s.length <= maxLen) return s;
                 return s.slice(0, Math.max(0, maxLen - 1)).trim() + '…';
             }
+            
+            // Send PDF to server
+            async function sendPdfToServer(pdfBase64, email, lang) {
+    try {
+        console.log('=== НАЧАЛО ОТПРАВКИ PDF ===');
+        console.log('Email:', email);
+        console.log('Язык:', lang);
+        console.log('Размер PDF (base64):', pdfBase64.length, 'символов');
+        
+        // Используем iframe для обхода CORS
+        return new Promise((resolve, reject) => {
+            // Создаем уникальный ID для iframe
+            const iframeId = 'pdfUpload_' + Date.now();
+            
+            // Создаем скрытый iframe
+            const iframe = document.createElement('iframe');
+            iframe.id = iframeId;
+            iframe.style.display = 'none';
+            iframe.name = iframeId;
+            
+            // Создаем форму для отправки данных
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'https://script.google.com/macros/s/AKfycbyRcTean4pIh5f7BZc60FKAgEvCwuymHrCQzuVag0f2cbMMb1Pmtk038hylQIYIjZoQ/exec';
+            form.target = iframeId;
+            form.enctype = 'application/x-www-form-urlencoded';
+            
+            // Добавляем поля формы
+            const fields = {
+                action: 'email_pdf',
+                email: email,
+                pdfBase64: pdfBase64,
+                lang: lang,
+                filename: `ESG_Assessment_${Date.now()}.pdf`
+            };
+            
+            Object.keys(fields).forEach(key => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = fields[key];
+                form.appendChild(input);
+            });
+            
+            // Добавляем iframe и форму в DOM
+            document.body.appendChild(iframe);
+            document.body.appendChild(form);
+            
+            // Обработчик ответа
+            iframe.onload = function() {
+                try {
+                    // Получаем содержимое iframe
+                    const iframeContent = iframe.contentDocument || iframe.contentWindow.document;
+                    const responseText = iframeContent.body.textContent || iframeContent.body.innerText;
+                    
+                    console.log('Ответ от сервера:', responseText);
+                    
+                    // Парсим JSON ответ
+                    let result;
+                    try {
+                        result = JSON.parse(responseText);
+                    } catch (parseError) {
+                        // Если не JSON, создаем базовый ответ
+                        result = { ok: true, message: 'PDF sent via form' };
+                    }
+                    
+                    // Очищаем DOM
+                    document.body.removeChild(iframe);
+                    document.body.removeChild(form);
+                    
+                    if (result.ok) {
+                        const successMessage = lang === 'pl' ? 
+                            `PDF успешно отправлен!\n\nEmail отправлен на: ${email}` :
+                            `PDF successfully sent!\n\nEmail sent to: ${email}`;
+                        alert(successMessage);
+                        resolve(result);
+                    } else {
+                        reject(new Error(result.error || 'Unknown error'));
+                    }
+                    
+                } catch (error) {
+                    console.error('Ошибка при обработке ответа iframe:', error);
+                    reject(error);
+                }
+            };
+            
+            // Обработчик ошибок
+            iframe.onerror = function() {
+                document.body.removeChild(iframe);
+                document.body.removeChild(form);
+                reject(new Error('Iframe loading failed'));
+            };
+            
+            // Отправляем форму
+            console.log('Отправляем форму через iframe...');
+            form.submit();
+            
+            // Таймаут на случай, если iframe не загрузится
+            setTimeout(() => {
+                if (document.getElementById(iframeId)) {
+                    document.body.removeChild(iframe);
+                    document.body.removeChild(form);
+                    reject(new Error('Iframe timeout'));
+                }
+            }, 30000); // 30 секунд
+            
+        });
+        
+    } catch (error) {
+        console.error('=== ОШИБКА ОТПРАВКИ ===');
+        console.error('Тип ошибки:', error.name);
+        console.error('Сообщение ошибки:', error.message);
+        console.error('Стек ошибки:', error.stack);
+        
+        const errorMessage = lang === 'pl' ? 
+            'Ошибка отправки PDF: ' + error.message :
+            'Error sending PDF: ' + error.message;
+        alert(errorMessage);
+        throw error;
+    }
+}
 
             function shortenForPdf(text, lang='pl', maxLen=180) {
                 const s = String(text || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
@@ -3433,8 +3397,8 @@ window.addEventListener('DOMContentLoaded', function() {
                         { title: 'Diagnoza: Obecny poziom ESG jest niski i wymaga podstawowych porządków procesowych.', how: 'Co i jak: Ustal 3-miesięczny plan: (1) zmapuj źródła danych, (2) wdroż proste kontrole jakości (4-eyes), (3) przygotuj plan zbierania danych raz na kwartał.', why: 'Dlaczego: Bez spójnych danych nie uruchomisz żadnej automatyzacji ani audytowalnego raportu.' }
                     ],
                     mid: [
-                        { title: 'Diagnoza: {{score_overall}}% – masz podstawy, ale brakuje spójności między działami.', how: 'Co i jak: Ujednolić modele danych (jedna tabela „źródło prawdy”), dodać cele (np. redukcja CO₂ do roku X) i przegląd zarządu raz/rok.', why: 'Dlaczego: Spina to procesy w całość i odblokowuje szybki eksport do ESRS/GRI.' },
-                        { title: 'Diagnoza: Poziom średni – duży potencjał do „szybkich wygranych”.', how: 'Co i jak: Dopnij brakujące polityki (antykorupcyjna, whistleblowing), ustaw kwartalny rytm zbierania danych i bazowe dashboardy KPI.', why: 'Dlaczego: Podniesiesz wiarygodność raportu i obniżysz koszty kolejnego cyklu.' }
+                        { title: 'Diagnoza: {{score_overall}}% – masz podstawy, ale brakuje spójności między działami.', how: 'Co i jak: Ujednolić modele danych (jedna tabela "źródło prawdy"), dodać cele (np. redukcja CO₂ do roku X) i przegląd zarządu raz/rok.', why: 'Dlaczego: Spina to procesy w całość i odblokowuje szybki eksport do ESRS/GRI.' },
+                        { title: 'Diagnoza: Poziom średni – duży potencjał do "szybkich wygranych".', how: 'Co i jak: Dopnij brakujące polityki (antykorupcyjna, whistleblowing), ustaw kwartalny rytm zbierania danych i bazowe dashboardy KPI.', why: 'Dlaczego: Podniesiesz wiarygodność raportu i obniżysz koszty kolejnego cyklu.' }
                     ],
                     high: [
                         { title: 'Diagnoza: {{score_overall}}% – dojrzały poziom ESG.', how: 'Co i jak: Przejdź na ciągłe zbieranie danych (near‑real time), rozszerz Scope 3 i wprowadź niezależne assurance wybranych wskaźników.', why: 'Dlaczego: To wzmacnia zaufanie inwestorów i pozwala publicznie pokazać przewagę nad rynkiem.' },
@@ -3524,7 +3488,7 @@ window.addEventListener('DOMContentLoaded', function() {
                         ],
                         high: [
                             { title: 'Diagnoza: Silny obszar S.', how: 'Co i jak: Skaluj programy DEI na kadrę zarządzającą i publikuj roczne cele S.', why: 'Dlaczego: Transparentność wzmacnia markę pracodawcy.' },
-                            { title: 'Diagnoza: Stabilne praktyki społeczne.', how: 'Co i jak: Dodaj zewnętrzną ewaluację BHP/HR raz w roku.', why: 'Dlaczego: Niezależne spojrzenie ogranicza ryzyko „ślepych punktów”.' }
+                            { title: 'Diagnoza: Stabilne praktyki społeczne.', how: 'Co i jak: Dodaj zewnętrzną ewaluację BHP/HR raz w roku.', why: 'Dlaczego: Niezależne spojrzenie ogranicza ryzyko "ślepych punktów".' }
                         ]
                     },
                     g: {
@@ -3643,7 +3607,7 @@ window.addEventListener('DOMContentLoaded', function() {
                         ],
                         high: [
                             { title: 'Silny obszar S.', how: 'Skaluj DEI na kadrę; publikuj cele.', why: 'Silna marka pracodawcy.' },
-                            { title: 'Stabilne praktyki S.', how: 'Zewnętrzna ewaluacja HR/BHP raz w roku.', why: 'Mniej „ślepych punktów”.' }
+                            { title: 'Stabilne praktyki S.', how: 'Zewnętrzna ewaluacja HR/BHP raz w roku.', why: 'Mniej "ślepych punktów".' }
                         ]
                     },
                     g: {

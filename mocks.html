@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Preview - ESGSyncPRO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .controls {
+            background: #1e293b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .controls button {
+            background: #A3CC4B;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .controls button:hover {
+            background: #8BB83A;
+        }
+        .preview {
+            padding: 20px;
+            border: 2px solid #A3CC4B;
+            margin: 20px;
+            border-radius: 10px;
+        }
+        .page {
+            width: 100%;
+            min-height: 1131px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .page-break {
+            height: 20px;
+            background: #A3CC4B;
+            margin: 10px 0;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <h1>PDF Preview - ESGSyncPRO</h1>
+            <p>Предварительный просмотр PDF с тестовыми данными (4 страницы)</p>
+            <button onclick="generatePDF()">Generate PDF</button>
+            <button onclick="downloadPDF()">Download PDF</button>
+            <button onclick="toggleComment()">Toggle Comment</button>
+            <button onclick="testLowScore()">Test Low Score (30%)</button>
+            <button onclick="testMediumScore()">Test Medium Score (55%)</button>
+            <button onclick="testHighScore()">Test High Score (85%)</button>
+            <div id="libraryStatus" style="margin-top: 15px; font-size: 14px; color: orange;">⏳ Loading libraries...</div>
+            <button onclick="debugLibraries()" style="background: #64748b; margin-top: 10px;">Debug Libraries</button>
+        </div>
+        
+        <div class="preview">
+            <h2>Preview:</h2>
+            <div id="pdfContent"></div>
+        </div>
+    </div>
+
+    <!-- PDF Generation Libraries -->
+    <script>
+        // Track library loading status
+        window.libraryStatus = {
+            html2canvas: false,
+            jsPDF: false
+        };
+        
+        function onLibraryLoad(library) {
+            window.libraryStatus[library] = true;
+            console.log(`${library} loaded successfully`);
+            updateLibraryStatus();
+        }
+        
+        function onLibraryError(library, error) {
+            console.error(`Failed to load ${library}:`, error);
+            updateLibraryStatus();
+        }
+        
+        function updateLibraryStatus() {
+            const status = window.libraryStatus;
+            console.log('Library status:', status);
+            
+            if (status.html2canvas && status.jsPDF) {
+                console.log('All libraries are ready!');
+                document.getElementById('libraryStatus').textContent = '✅ All libraries loaded';
+                document.getElementById('libraryStatus').style.color = 'green';
+            }
+        }
+    </script>
+    
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js" 
+            onload="onLibraryLoad('html2canvas')" 
+            onerror="onLibraryError('html2canvas', 'Failed to load')"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" 
+            onload="onLibraryLoad('jsPDF')" 
+            onerror="onLibraryError('jsPDF', 'Failed to load')"></script>
+    
+    <script src="pdf-template.js"></script>
+    <script>
+        // Mock data for testing
+        const mockScores = {
+            e: 18,
+            s: 22,
+            g: 15,
+            sup: 12,
+            total: 67,
+            percent: 79
+        };
+
+        const mockClientDetails = {
+            industry: "Technology",
+            employees: "100-500",
+            country: "Poland",
+            revenue: "$10M - $50M",
+            email: "test@company.com",
+            comment: "This is a test comment from Question 25. Our company is actively working on improving our ESG practices and we appreciate the detailed assessment provided by ESGSyncPRO."
+        };
+
+        const mockRecommendations = {
+            title: "Based on your score of {score_overall}%, here are your recommendations",
+            how: "To improve your ESG score from {score_overall}%, focus on the following areas:",
+            why: "Your current score of {score_overall}% indicates good progress, but there's room for improvement in specific areas."
+        };
+
+        // Mock translation function
+        function mockTranslate(key, fallback) {
+            const translations = {
+                'survey.title': 'ESG Quick Assessment',
+                'survey.result.title': 'Assessment Result',
+                'survey.result.cat.e': 'E',
+                'survey.result.cat.s': 'S',
+                'survey.result.cat.g': 'G',
+                'survey.result.cat.sup': 'Supply',
+                'survey.result.overall': 'Score',
+                'survey.result.interpretationLabel': 'Interpretation',
+                'survey.level.beginner': 'Beginner level',
+                'survey.level.intermediate': 'Intermediate level',
+                'survey.level.advanced': 'Advanced level'
+            };
+            return translations[key] || fallback;
+        }
+
+        // Generate preview
+        function generatePreview() {
+            const content = generatePdfHtmlContent(
+                mockScores, 
+                'en', 
+                mockTranslate, 
+                mockRecommendations, 
+                mockClientDetails
+            );
+            document.getElementById('pdfContent').innerHTML = content;
+        }
+
+        // Generate and Download PDF
+        async function generatePDF() {
+            try {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Generating PDF...';
+                button.disabled = true;
+                
+                // Check if libraries are loaded
+                if (!window.libraryStatus || !window.libraryStatus.html2canvas) {
+                    throw new Error('html2canvas library not loaded');
+                }
+                
+                if (!window.libraryStatus || !window.libraryStatus.jsPDF) {
+                    throw new Error('jsPDF library not loaded');
+                }
+                
+                // Get jsPDF constructor
+                let jsPDFConstructor;
+                
+                // Try different ways to access jsPDF
+                if (typeof jsPDF !== 'undefined') {
+                    if (jsPDF.jsPDF) {
+                        jsPDFConstructor = jsPDF.jsPDF;
+                    } else if (jsPDF.default) {
+                        jsPDFConstructor = jsPDF.default;
+                    } else {
+                        jsPDFConstructor = jsPDF;
+                    }
+                } else if (typeof window.jsPDF !== 'undefined') {
+                    jsPDFConstructor = window.jsPDF;
+                } else if (typeof jsPDFModule !== 'undefined') {
+                    jsPDFConstructor = jsPDFModule.jsPDF || jsPDFModule.default || jsPDFModule;
+                } else {
+                    // Try to find jsPDF in global scope
+                    const globalJsPDF = window.jsPDF || window.jsPDFModule || window.jsPDFLib;
+                    if (globalJsPDF) {
+                        jsPDFConstructor = globalJsPDF.jsPDF || globalJsPDF.default || globalJsPDF;
+                    } else {
+                        throw new Error('jsPDF constructor not found. Available globals: ' + Object.keys(window).filter(k => k.toLowerCase().includes('jspdf')).join(', '));
+                    }
+                }
+                
+                console.log('jsPDF constructor found:', jsPDFConstructor);
+                
+                // Get the PDF content
+                const content = generatePdfHtmlContent(
+                    mockScores, 
+                    'en', 
+                    mockTranslate, 
+                    mockRecommendations, 
+                    mockClientDetails
+                );
+                
+                console.log('Generated content length:', content.length);
+                console.log('Content preview:', content.substring(0, 500) + '...');
+                
+                // Create a temporary container for PDF generation
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = content;
+                tempContainer.style.position = 'absolute';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.width = '794px';
+                tempContainer.style.backgroundColor = '#ffffff';
+                document.body.appendChild(tempContainer);
+                
+                // Log what we found
+                const pages = tempContainer.querySelectorAll('div[style*="min-height: 1131px"], div[style*="height: 1131px"]');
+                console.log('Found pages:', pages.length);
+                pages.forEach((page, index) => {
+                    console.log(`Page ${index + 1}:`, page.outerHTML.substring(0, 200) + '...');
+                });
+                
+                // Generate PDF using html2canvas and jsPDF
+                const pdf = new jsPDFConstructor('p', 'pt', 'a4');
+                
+                for (let i = 0; i < pages.length; i++) {
+                    if (i > 0) {
+                        pdf.addPage();
+                    }
+                    
+                    const page = pages[i];
+                    console.log(`Processing page ${i + 1}...`);
+                    
+                    const canvas = await html2canvas(page, {
+                        width: 794,
+                        height: 1131,
+                        scale: 3, // Much higher quality for better SVG rendering
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        logging: false, // Disable logging for production
+                        removeContainer: false,
+                        foreignObjectRendering: true, // Better SVG support
+                        imageTimeout: 0, // No timeout for images
+                        allowTaint: true,
+                        taintTest: false
+                    });
+                    
+                    console.log(`Page ${i + 1} canvas size:`, canvas.width, 'x', canvas.height);
+                    
+                    const imgData = canvas.toDataURL('image/png');
+                    pdf.addImage(imgData, 'PNG', 0, 0, 794, 1131);
+                }
+                
+                // Convert PDF to base64 and send to server
+                const pdfBase64 = pdf.output('datauristring').split(',')[1];
+                console.log('PDF converted to base64, length:', pdfBase64.length);
+                
+                // Send PDF to server
+                await sendPdfToServer(pdfBase64, mockClientDetails.email || 'test@example.com', 'en');
+                console.log('PDF sent to server successfully');
+                
+                // Clean up
+                document.body.removeChild(tempContainer);
+                
+                button.textContent = originalText;
+                button.disabled = false;
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF: ' + error.message);
+                
+                const button = event.target;
+                button.textContent = 'Generate PDF';
+                button.disabled = false;
+            }
+        }
+
+        // Download PDF (alias for generatePDF)
+        function downloadPDF() {
+            generatePDF();
+        }
+        
+        // Send PDF to server
+        async function sendPdfToServer(pdfBase64, email, lang) {
+            try {
+                const response = await fetch('YOUR_APPS_SCRIPT_URL_HERE', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'email_pdf',
+                        email: email,
+                        pdfBase64: pdfBase64,
+                        lang: lang,
+                        filename: `ESGSyncPRO_Report_${Date.now()}.pdf`
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.ok) {
+                    alert('PDF успешно отправлен на email: ' + email);
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Error sending PDF to server:', error);
+                alert('Ошибка отправки PDF: ' + error.message);
+            }
+        }
+
+        // Toggle comment for testing
+        function toggleComment() {
+            if (mockClientDetails.comment) {
+                mockClientDetails.comment = null;
+            } else {
+                mockClientDetails.comment = "This is a test comment from Question 25. Our company is actively working on improving our ESG practices and we appreciate the detailed assessment provided by ESGSyncPRO.";
+            }
+            generatePreview();
+        }
+
+        // Test different score scenarios
+        function testLowScore() {
+            mockScores.e = 8;
+            mockScores.s = 6;
+            mockScores.g = 4;
+            mockScores.sup = 3;
+            mockScores.total = 21;
+            mockScores.percent = 25;
+            generatePreview();
+        }
+
+        function testMediumScore() {
+            mockScores.e = 15;
+            mockScores.s = 14;
+            mockScores.g = 11;
+            mockScores.sup = 8;
+            mockScores.total = 48;
+            mockScores.percent = 56;
+            generatePreview();
+        }
+
+        function testHighScore() {
+            mockScores.e = 22;
+            mockScores.s = 23;
+            mockScores.g = 18;
+            mockScores.sup = 13;
+            mockScores.total = 76;
+            mockScores.percent = 89;
+            generatePreview();
+        }
+
+        // Check if libraries are loaded
+        function checkLibraries() {
+            const status = window.libraryStatus || {};
+            console.log('Library status:', status);
+            
+            if (status.html2canvas && status.jsPDF) {
+                console.log('All libraries loaded successfully!');
+                return true;
+            } else {
+                console.log('Some libraries are still loading...');
+                return false;
+            }
+        }
+
+        // Debug function to see what's available
+        function debugLibraries() {
+            console.log('=== LIBRARY DEBUG INFO ===');
+            console.log('window.jsPDF:', window.jsPDF);
+            console.log('window.jsPDFModule:', window.jsPDFModule);
+            console.log('window.jsPDFLib:', window.jsPDFLib);
+            console.log('jsPDF (global):', typeof jsPDF !== 'undefined' ? jsPDF : 'undefined');
+            console.log('html2canvas:', typeof html2canvas !== 'undefined' ? html2canvas : 'undefined');
+            
+            // Check all global variables that might contain jsPDF
+            const jsPDFGlobals = Object.keys(window).filter(k => k.toLowerCase().includes('jspdf'));
+            console.log('jsPDF-related globals:', jsPDFGlobals);
+            
+            if (jsPDFGlobals.length > 0) {
+                jsPDFGlobals.forEach(key => {
+                    console.log(`${key}:`, window[key]);
+                });
+            }
+            
+            console.log('Library status:', window.libraryStatus);
+            console.log('========================');
+        }
+
+        // Load preview on page load
+        window.onload = function() {
+            generatePreview();
+            // Check libraries after a short delay
+            setTimeout(checkLibraries, 1000);
+        };
+    </script>
+</body>
+</html>
