@@ -3361,10 +3361,9 @@
         const errorMessage = lang === 'pl' ? 
             'Ошибка отправки PDF: ' + error.message :
             'Error sending PDF: ' + error.message;
-        alert(errorMessage);
         throw error;
     }
-}
+            }
 
             function shortenForPdf(text, lang='pl', maxLen=180) {
                 const s = String(text || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
