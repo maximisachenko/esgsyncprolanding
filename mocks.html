@@ -299,7 +299,6 @@
                 
             } catch (error) {
                 console.error('Error generating PDF:', error);
-                alert('Error generating PDF: ' + error.message);
                 
                 const button = event.target;
                 button.textContent = 'Generate PDF';
@@ -331,13 +330,12 @@
                 
                 const result = await response.json();
                 if (result.ok) {
-                    alert('PDF успешно отправлен на email: ' + email);
+                    // PDF sent successfully
                 } else {
                     throw new Error(result.error || 'Unknown error');
                 }
             } catch (error) {
                 console.error('Error sending PDF to server:', error);
-                alert('Ошибка отправки PDF: ' + error.message);
             }
         }
 
