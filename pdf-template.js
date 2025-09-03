@@ -20,8 +20,16 @@ function getEsgLevel(percent) {
  */
 function getRandomVersion() {
     const versions = ['A', 'B', 'C'];
-    return versions[Math.floor(Math.random() * versions.length)];
+    const selectedVersion = versions[Math.floor(Math.random() * versions.length)];
+    
+    console.log('🎲 Random Selection:', selectedVersion);
+    
+    return selectedVersion;
 }
+
+
+
+
 
 /**
  * Gets ESG content based on level and version
@@ -612,12 +620,12 @@ function generatePdfHtmlContent(scores, currentLanguage, t, recommendations, cli
                    
                    <!-- Take Action - Sixth Page -->
                    <div style="width: 794px; padding: 50px 40px; min-height: 1131px; box-sizing: border-box; position: relative; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
-                                              <h1 style="color: #1e293b; margin: 0 0 40px 0; font-size: 36px; text-align: center; color: #A3CC4B;">💼 ${currentLanguage==='pl' ? 'Weź działanie' : 'Take Action'}</h1>
+                                              <h1 style="color: #1e293b; margin: 0 0 40px 0; font-size: 36px; text-align: center; color: #A3CC4B;">🚀 ${currentLanguage==='pl' ? 'Weź działanie' : 'Take Action'}</h1>
                        
                        <!-- Main CTA Block -->
                        <div style="background: white; padding: 60px; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); margin: 40px 0; border: 3px solid #A3CC4B; text-align: center;">
                            <div style="font-size: 32px; color: #1e293b; margin-bottom: 20px; font-weight: bold;">
-                               💼 ${currentLanguage==='pl' ? 'Umów bezpłatną konsultację z ESGSyncPRO' : 'Schedule a free consultation with ESGSyncPRO'}
+                               🚀 ${currentLanguage==='pl' ? 'Umów bezpłatną konsultację z ESGSyncPRO' : 'Schedule a free consultation with ESGSyncPRO'}
                            </div>
                            <p style="font-size: 18px; color: #64748b; line-height: 1.6; margin-bottom: 20px;">
                                ${esgContent.cta}
@@ -688,7 +696,7 @@ function generatePdfHtmlContent(scores, currentLanguage, t, recommendations, cli
                        <!-- Take Action Section -->
                        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 30px; border-radius: 20px; border: 2px solid #f59e0b; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin: 40px 0;">
                            <div style="font-weight: bold; color: #1e293b; margin-bottom: 20px; font-size: 24px; text-align: center; color: #d97706;">
-                               💼 ${currentLanguage==='pl' ? 'Weź działanie:' : 'Take Action:'}
+                               🚀 ${currentLanguage==='pl' ? 'Weź działanie:' : 'Take Action:'}
                            </div>
                            <div style="color: #1e293b; line-height: 1.8; font-size: 18px; text-align: center; margin-bottom: 20px;">
                                ${esgContent.cta}
@@ -740,5 +748,14 @@ function templateString(str, map) {
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { generatePdfHtmlContent, templateString };
+    module.exports = { 
+        generatePdfHtmlContent, 
+        templateString,
+        getRandomVersion
+    };
+} else {
+    // Make functions available globally in browser
+    window.generatePdfHtmlContent = generatePdfHtmlContent;
+    window.templateString = templateString;
+    window.getRandomVersion = getRandomVersion;
 }

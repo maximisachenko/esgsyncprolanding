@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="pdf-template.js"></script>
+
     <style>
         /* Responsive menu styles */
         @media (min-width: 1024px) {
@@ -625,6 +626,45 @@
         </div>
     </header>
 
+    <!-- Email capture / ESG assessment CTA -->
+    <section id="esg-email" class="py-20 md:py-24 bg-gradient-to-b from-white to-gray-50">
+        <div class="px-6 md:px-12 lg:px-28">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 mb-4">
+                    ESGSyncPRO
+                </div>
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4 typing-headline">
+                    <span id="typed-headline"></span><span class="typing-caret"></span>
+                </h2>
+                <p id="esg-subtitle" class="text-base md:text-xl text-gray-600 leading-relaxed mb-8" data-translate="esgEmail.subtitle">
+                    Answer 26 questions → get a personalized PDF with a benchmark in 24h. No commitment.
+                </p>
+                <form id="lead-form" class="flex flex-col sm:flex-row items-stretch gap-3 justify-center max-w-3xl mx-auto" method="POST" target="lead-target">
+                    <input 
+                        id="lead-email" 
+                        name="email" 
+                        type="email" 
+                        autocomplete="email"
+                        required
+                        data-translate-placeholder="esgEmail.emailPlaceholder"
+                        placeholder="Email address"
+                        class="flex-1 min-w-0 border border-gray-200 bg-white rounded-xl px-4 py-3 md:py-4 text-base md:text-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#91cb24] focus:border-[#91cb24] shadow-sm" />
+                    <button 
+                        id="lead-submit"
+                        type="submit" 
+                        class="whitespace-nowrap bg-[#95ce24] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl text-base md:text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm">
+                        <span data-translate="esgEmail.cta">Start ESG assessment</span>
+                    </button>
+                </form>
+                <iframe name="lead-target" id="lead-target" style="display:none"></iframe>
+                <div class="text-[11px] md:text-xs text-gray-500 mt-10">
+                    <span data-translate="esgEmail.disclaimer">You can unsubscribe at any time (STOP).</span> <a href="#privacy" class="underline" data-translate="footer.privacy">Privacy Policy</a>.
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
     <!-- Hero Section -->
     <section id="home" class="min-h-[500px] py-12" style="background: linear-gradient(90deg, #f9fafb 0%, #ffffff 100%)">
         <div class="flex flex-col items-center justify-center h-full px-6 md:px-12 lg:px-28 gap-8 lg:gap-12">
@@ -962,45 +1002,6 @@
     <div id="docs" class="invisible h-0"></div>
     <div id="about" class="invisible h-0"></div>
     <div id="privacy" class="invisible h-0"></div>
-
-    <!-- Email capture / ESG assessment CTA -->
-    <section id="esg-email" class="py-20 md:py-24 bg-gradient-to-b from-white to-gray-50">
-        <div class="px-6 md:px-12 lg:px-28">
-            <div class="max-w-4xl mx-auto text-center">
-                <div class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 mb-4">
-                    ESGSyncPRO
-                </div>
-                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4 typing-headline">
-                    <span id="typed-headline"></span><span class="typing-caret"></span>
-                </h2>
-                <p id="esg-subtitle" class="text-base md:text-xl text-gray-600 leading-relaxed mb-8" data-translate="esgEmail.subtitle">
-                    Answer 26 questions → get a personalized PDF with a benchmark in 24h. No commitment.
-                </p>
-                <form id="lead-form" class="flex flex-col sm:flex-row items-stretch gap-3 justify-center max-w-3xl mx-auto" method="POST" target="lead-target">
-                    <input 
-                        id="lead-email" 
-                        name="email" 
-                        type="email" 
-                        autocomplete="email"
-                        required
-                        data-translate-placeholder="esgEmail.emailPlaceholder"
-                        placeholder="Email address"
-                        class="flex-1 min-w-0 border border-gray-200 bg-white rounded-xl px-4 py-3 md:py-4 text-base md:text-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#91cb24] focus:border-[#91cb24] shadow-sm" />
-                    <button 
-                        id="lead-submit"
-                        type="submit" 
-                        class="whitespace-nowrap bg-[#95ce24] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl text-base md:text-lg font-semibold hover:bg-[#7fb01f] transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm">
-                        <span data-translate="esgEmail.cta">Start ESG assessment</span>
-                    </button>
-                </form>
-                <iframe name="lead-target" id="lead-target" style="display:none"></iframe>
-                <div class="text-[11px] md:text-xs text-gray-500 mt-10">
-                    <span data-translate="esgEmail.disclaimer">You can unsubscribe at any time (STOP).</span> <a href="#privacy" class="underline" data-translate="footer.privacy">Privacy Policy</a>.
-                </div>
-                
-            </div>
-        </div>
-    </section>
 
     <!-- Survey Modal -->
     <div id="survey-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
@@ -1409,7 +1410,7 @@
                 "pricing.enterprise.feature4": "SLA guarantee",
                 
                 // Email CTA (ESG)
-                "esgEmail.headline": "Your ESG report sent immediately – without chaos or stress",
+                "esgEmail.headline": "\"Raport ESG Benchmark\" w 1 minutę",
                 "esgEmail.subtitle": "Answer 26 questions → get a personalized PDF instantly. No commitment.",
                 "esgEmail.cta": "Start ESG assessment",
                 "esgEmail.emailPlaceholder": "Email address",
@@ -1434,6 +1435,7 @@
                 "survey.validation.fillAll": "Please fill in all fields to continue.",
                 "survey.result.thanks.title": "Thank you for completing the test!",
                 "survey.result.thanks.subtitle": "Your personalized PDF will arrive in your inbox within 1 minute.",
+                "survey.result.aiNotice": "🤖 This report was generated using artificial intelligence",
 
                 "survey.sections.profile.title": "1. Company profile",
                 "survey.profile.industry": "Industry",
@@ -1622,7 +1624,7 @@
                 "pricing.enterprise.feature4": "Gwarancja SLA",
                 
                 // Email CTA (ESG)
-                "esgEmail.headline": "Twój raport ESG wysyłamy natychmiast – bez chaosu i nerwów",
+                "esgEmail.headline": "\"Raport ESG Benchmark\" w 1 minutę",
                 "esgEmail.subtitle": "Wypełnij 26 pytań → otrzymasz personalizowany PDF natychmiast. Zero zobowiązań.",
                 "esgEmail.cta": "Rozpocznij ocenę ESG",
                 "esgEmail.emailPlaceholder": "Adres e‑mail",
@@ -1647,6 +1649,7 @@
                 "survey.validation.fillAll": "Proszę wypełnić wszystkie pola, aby kontynuować.",
                 "survey.result.thanks.title": "Dziękujemy za wypełnienie testu!",
                 "survey.result.thanks.subtitle": "Twój spersonalizowany PDF dotrze na e‑mail w ciągu 1 minuty.",
+                "survey.result.aiNotice": "🤖 Ten raport został wygenerowany przy użyciu sztucznej inteligencji",
 
                 "survey.sections.profile.title": "1. Profil firmy",
                 "survey.profile.industry": "Branża",
@@ -2791,8 +2794,8 @@
     <script>
         (function() {
             const HEADLINE_BY_LANG = {
-                en: 'Your ESG report ready in 1 minute – without chaos or stress',
-                pl: 'Twój raport ESG gotowy w 1 minutę – bez chaosu i nerwów'
+                en: '"Raport ESG Benchmark" w 1 minutę',
+                pl: '"Raport ESG Benchmark" w 1 minutę'
             };
             const ENABLE_TYPING_ANIMATION = false; // will keep disabled; external Typed.js will control animation
             const SPLIT_DELIMITER = ' – ';
@@ -3093,6 +3096,9 @@
                     resultsEl.innerHTML = `
                         <div class="q-title">${t('survey.result.thanks.title', 'Dziękujemy za wypełnienie testu!')}</div>
                         <div class="q-sub" style="margin-top:8px;">${t('survey.result.thanks.subtitle', 'Twój spersonalizowany PDF dotrze na e‑mail w ciągu 1 minuty.')}</div>
+                        <div style="margin-top: 20px; padding: 12px; background: rgba(163, 204, 75, 0.1); border: 1px solid #A3CC4B; border-radius: 8px; text-align: center; font-size: 14px; color: #A3CC4B; font-weight: 500;">
+                            ${t('survey.result.aiNotice', '🤖 Ten raport został wygenerowany przy użyciu sztucznej inteligencji')}
+                        </div>
                     `;
                 }
                 showStep('results');
