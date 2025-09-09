@@ -2,7 +2,7 @@
 // Copy this file to config.js and add your actual API key
 
 // Set your OpenAI API key here
-window.OPENAI_API_KEY = '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';
+window.OPENAI_API_KEY = 'your_openai_api_key_here';
 
 // Other configuration options
 window.APP_CONFIG = {
