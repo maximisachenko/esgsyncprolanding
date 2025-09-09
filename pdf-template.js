@@ -178,19 +178,186 @@ function getEsgContent(level, version, language) {
 }
 
 /**
+ * Gets ESG content with AI-selected variants for each text section
+ * @param {string} level - ESG level (low, medium, high)
+ * @param {Object} variants - Object with selected variants for each section
+ * @param {string} language - Language ('pl' or 'en')
+ * @returns {Object} ESG content object with selected variants
+ */
+function getEsgContentWithVariants(level, variants, language) {
+    const content = {
+        low: {
+            A: {
+                summary: language === 'pl' 
+                    ? 'Twój wynik plasuje firmę na początkowym etapie dojrzałości ESG. Oznacza to, że brakuje kluczowych polityk, kontroli i procesów. Takie luki tworzą realne ryzyka – od trudności w wygrywaniu nowych kontraktów, po wykluczenie z przetargów, po negatywną percepcję wśród inwestorów. To nie jest stan, który możesz utrzymać długo, jeśli myślisz o wzroście.'
+                    : 'Your score places the company at the initial stage of ESG maturity. This means that key policies, controls, and processes are missing. Such gaps create real risks – from difficulties in winning new contracts, to exclusion from tenders, to negative perception among investors. This is not a state you can maintain for long if you are thinking about growth.',
+                nextSteps: language === 'pl' 
+                    ? ['Utwórz podstawowe polityki ESG (środowisko, BHP, sygnalizowanie).', 'Ustal minimalne pomiary – zużycie energii, emisje Scope 1 i 2, rotacja pracowników.', 'Wyznacz właściciela ESG w firmie i wprowadź coroczny przegląd ryzyka.']
+                    : ['Create basic ESG policies (environment, OHS, whistleblowing).', 'Establish minimum measurements – energy consumption, Scope 1 and 2 emissions, employee turnover.', 'Appoint an ESG owner within the company and introduce an annual risk review.'],
+                cta: language === 'pl'
+                    ? 'Czy chcesz szybko zbudować fundament i uniknąć niepowodzeń podczas audytu? Skontaktuj się z nami: esgsync.pro | esgsync@protonmail.com'
+                    : 'Do you want to quickly build a foundation and avoid failures during an audit? Contact us: esgsync.pro | esgsync@protonmail.com',
+                premiumTeaser: language === 'pl'
+                    ? 'Premium wersja raportu pokaże Ci dokładnie, które polityki i KPI wdrożyć oraz jak przygotować firmę do wymagań CSRD.'
+                    : 'The premium version of the report will show you exactly which policies and KPIs to implement and how to prepare your company for CSRD requirements.'
+            },
+            B: {
+                summary: language === 'pl'
+                    ? 'Niski wynik oznacza, że firma działa bez spójnego fundamentu ESG. Nawet proste mechanizmy, takie jak monitoring energii czy polityka antykorupcyjna, są nieobecne, co bezpośrednio przekłada się na ryzyko finansowe i reputacyjne. Jeśli nie działasz teraz, w ciągu roku Twoja firma może być uznana za wysokiego ryzyka partnera w łańcuchu dostaw.'
+                    : 'A low score means the company operates without a coherent ESG foundation. Even simple mechanisms, such as energy monitoring or an anti-corruption policy, are missing, which directly translates into financial and reputational risk. If you don\'t act now, within a year your company may be considered a high-risk partner in the supply chain.',
+                nextSteps: language === 'pl'
+                    ? ['Ustaw 3-miesięczny plan działania: dane → kontrole → raport.', 'Wprowadź zasadę czterech oczu dla raportowania danych ESG.', 'Zacznij od corocznego zbierania danych ESG, następnie zwiększ częstotliwość.']
+                    : ['Set up a 3-month action plan: data → controls → report.', 'Introduce a four-eyes principle for ESG data reporting.', 'Start with annual ESG data collection, then increase frequency.'],
+                cta: language === 'pl'
+                    ? 'Twoja firma pilnie potrzebuje uporządkować podstawy ESG. Skontaktuj się z nami: esgsync.pro | esgsync@protonmail.com'
+                    : 'Your company urgently needs to put ESG basics in order. Reach out to us: esgsync.pro | esgsync@protonmail.com',
+                premiumTeaser: language === 'pl'
+                    ? 'Premium wersja raportu zawiera 12-miesięczny plan działania i gotowe szablony polityk ESG – oszczędzając Ci miesiące pracy.'
+                    : 'The premium report version includes a 12-month action plan and ready-made ESG policy templates – saving you months of work.'
+            },
+            C: {
+                summary: language === 'pl'
+                    ? 'Niski wynik to czerwona flaga. Brakuje niezbędnych fundamentów, co czyni firmę nieprzygotowaną na wymagania CSRD lub oczekiwania klientów i partnerów. Każde kwartalne opóźnienie zwiększa ryzyko utraty kontraktów i reputacji.'
+                    : 'A low score is a red flag. Essential foundations are missing, which makes the company unprepared for CSRD requirements or customer and partner expectations. Every quarter of delay increases the risk of losing contracts and reputation.',
+                nextSteps: language === 'pl'
+                    ? ['Uczyń ESG priorytetem zarządu.', 'Zdefiniuj minimalne KPI: emisje Scope 1–2, rotacja, wskaźnik wypadków.', 'Przygotuj pierwszą politykę ESG i raport do końca roku.']
+                    : ['Make ESG a management board priority.', 'Define minimum KPIs: Scope 1–2 emissions, turnover, accident rate.', 'Prepare your first ESG policy and report by year-end.'],
+                cta: language === 'pl'
+                    ? 'To ostatni moment na wprowadzenie podstaw ESG. Zarezerwuj konsultację z ESGSyncPRO: esgsync.pro | esgsync@protonmail.com'
+                    : 'This is the last moment to introduce ESG basics. Book a consultation with ESGSyncPRO: esgsync.pro | esgsync@protonmail.com',
+                premiumTeaser: language === 'pl'
+                    ? 'Z wersją premium otrzymasz benchmark branżowy i konkretne szablony polityk – gotowe do natychmiastowego wdrożenia.'
+                    : 'With the premium version, you\'ll receive an industry benchmark and concrete policy templates – ready for immediate implementation.'
+            }
+        },
+        medium: {
+            A: {
+                summary: language === 'pl'
+                    ? 'Średni poziom ESG oznacza, że masz fundament, ale procesy są rozfragmentowane. Nie ma spójności między działami, jasnych celów ani rytmu raportowania. Jeśli pozostaniesz na tym etapie, rynek i Twoja konkurencja szybko Cię wyprzedzą.'
+                    : 'A medium ESG level means you have a foundation, but processes are fragmented. There is no consistency between departments, no clear goals, and no reporting rhythm. If you stay at this stage, the market and your competition will quickly overtake you.',
+                nextSteps: language === 'pl'
+                    ? ['Skonsoliduj źródła danych (jedna tabela "źródło prawdy").', 'Dodaj cele redukcji emisji i KPI HR.', 'Wprowadź kwartalny rytm raportowania do zarządu.']
+                    : ['Consolidate data sources (one single "source of truth" table).', 'Add emission reduction targets and HR KPIs.', 'Introduce quarterly reporting rhythm to the board.'],
+                cta: language === 'pl'
+                    ? 'Nie pozwól, aby średni wynik stał się Twoim sufitem. Zarezerwuj rozmowę z ESGSyncPRO: esgsync.pro | esgsync@protonmail.com'
+                    : 'Don\'t let an average score become your ceiling. Schedule a call with ESGSyncPRO: esgsync.pro | esgsync@protonmail.com',
+                premiumTeaser: language === 'pl'
+                    ? 'Wersja premium zawiera porównanie z konkurencją i szczegółowy plan osiągnięcia 80% w ciągu 12 miesięcy.'
+                    : 'The premium version includes competitor comparison and a detailed plan to reach 80% within 12 months.'
+            },
+            B: {
+                summary: language === 'pl'
+                    ? 'Masz solidne fundamenty, ale Twoje ESG działa jak silnik pracujący z połową mocy. Polityki istnieją, niektóre pomiary istnieją, ale brakuje pełnego obrazu. Tu leżą szybkie wygrane – decyzje wdrożone teraz mogą radykalnie poprawić wyniki w przyszłym roku.'
+                    : 'You have solid foundations, but your ESG works like an engine running at half power. Policies exist, some measurements exist, but the full picture is missing. This is where quick wins lie – decisions implemented now can radically improve results in the next year.',
+                nextSteps: language === 'pl'
+                    ? ['Rozszerz monitoring emisji na Scope 1–2 (ostatecznie Scope 3).', 'Wdróż sygnalizowanie i politykę antykorupcyjną.', 'Przygotuj dashboard ESG dla zarządu.']
+                    : ['Expand emission monitoring to Scope 1–2 (ultimately Scope 3).', 'Implement whistleblowing and an anti-corruption policy.', 'Prepare an ESG dashboard for the management board.'],
+                cta: language === 'pl'
+                    ? 'Masz potencjał osiągnięcia wysokiego poziomu ESG w ciągu 6–12 miesięcy. Skontaktuj się z nami: esgsync.pro | esgsync@protonmail.com'
+                    : 'You have the potential to reach a high ESG level within 6–12 months. Contact us: esgsync.pro | esgsync@protonmail.com',
+                premiumTeaser: language === 'pl'
+                    ? 'Premium wersja raportu daje Ci precyzyjny benchmark branżowy i priorytety działań krok po kroku.'
+                    : 'The premium version of the report gives you a precise industry benchmark and step-by-step action priorities.'
+            },
+            C: {
+                summary: language === 'pl'
+                    ? 'Twój wynik pokazuje, że ESG istnieje w Twojej firmie, ale nadal jest traktowane jako "dodatkowy projekt". Brakuje systematyzacji i integracji z kluczowymi procesami biznesowymi. Bez tego nie zbudujesz przewagi rynkowej.'
+                    : 'Your score shows that ESG exists in your company, but it is still treated as an "additional project". There is a lack of systematization and integration with key business processes. Without this, you will not build a market advantage.',
+                nextSteps: language === 'pl'
+                    ? ['Zintegruj ESG z procesami biznesowymi (budżet, KPI, bonusy).', 'Wprowadź automatyczne raportowanie ESG do zarządu.', 'Przygotuj strategię ESG na 3 lata z konkretnymi celami.']
+                    : ['Integrate ESG with business processes (budget, KPIs, bonuses).', 'Introduce automatic ESG reporting to the board.', 'Prepare a 3-year ESG strategy with specific goals.'],
+                cta: language === 'pl'
+                    ? 'Przekształć ESG z projektu w przewagę konkurencyjną. Skontaktuj się z nami: esgsync.pro | esgsync@protonmail.com'
+                    : 'Transform ESG from a project into a competitive advantage. Contact us: esgsync.pro | esgsync@protonmail.com',
+                premiumTeaser: language === 'pl'
+                    ? 'Wersja premium pokaże Ci, jak zintegrować ESG z procesami biznesowymi i osiągnąć 90% w ciągu 18 miesięcy.'
+                    : 'The premium version will show you how to integrate ESG with business processes and achieve 90% within 18 months.'
+            }
+        },
+        high: {
+            A: {
+                summary: language === 'pl'
+                    ? 'Wysoki wynik ESG to świetny fundament, ale nie gwarantuje utrzymania pozycji. Rynek się zmienia, wymagania rosną, a konkurencja nie śpi. Bez ciągłego rozwoju Twoja przewaga może zniknąć w ciągu 2-3 lat.'
+                    : 'A high ESG score is a great foundation, but it doesn\'t guarantee maintaining position. The market is changing, requirements are growing, and competition doesn\'t sleep. Without continuous development, your advantage may disappear within 2-3 years.',
+                nextSteps: language === 'pl'
+                    ? ['Wprowadź monitoring Scope 3 i zaawansowane KPI ESG.', 'Przygotuj się do raportowania CSRD i TCFD.', 'Rozwijaj innowacje ESG i nowe modele biznesowe.']
+                    : ['Introduce Scope 3 monitoring and advanced ESG KPIs.', 'Prepare for CSRD and TCFD reporting.', 'Develop ESG innovations and new business models.'],
+                cta: language === 'pl'
+                    ? 'Utrzymaj przewagę ESG i zostań liderem w branży. Skontaktuj się z nami: esgsync.pro | esgsync@protonmail.com'
+                    : 'Maintain your ESG advantage and become an industry leader. Contact us: esgsync.pro | esgsync@protonmail.com',
+                premiumTeaser: language === 'pl'
+                    ? 'Wersja premium zawiera benchmark z liderami branży i plan utrzymania pozycji na 3 lata.'
+                    : 'The premium version includes a benchmark with industry leaders and a 3-year position maintenance plan.'
+            },
+            B: {
+                summary: language === 'pl'
+                    ? 'Twój wynik plasuje Cię w gronie liderów ESG, ale to dopiero początek. Prawdziwa przewaga polega na ciągłym doskonaleniu, innowacjach i wyprzedzaniu trendów. Bez tego szybko stracisz pozycję na rzecz bardziej dynamicznych konkurentów.'
+                    : 'Your score places you among ESG leaders, but this is just the beginning. True advantage lies in continuous improvement, innovation, and staying ahead of trends. Without this, you will quickly lose position to more dynamic competitors.',
+                nextSteps: language === 'pl'
+                    ? ['Wprowadź zaawansowane analizy ESG i predykcyjne modele.', 'Rozwijaj partnerstwa strategiczne w obszarze ESG.', 'Przygotuj strategię ESG na 5 lat z celami science-based.']
+                    : ['Introduce advanced ESG analytics and predictive models.', 'Develop strategic partnerships in the ESG area.', 'Prepare a 5-year ESG strategy with science-based goals.'],
+                cta: language === 'pl'
+                    ? 'Zostań wzorcem ESG w branży. Skontaktuj się z nami: esgsync.pro | esgsync@protonmail.com'
+                    : 'Become an ESG role model in the industry. Contact us: esgsync.pro | esgsync@protonmail.com',
+                premiumTeaser: language === 'pl'
+                    ? 'Wersja premium daje Ci dostęp do najlepszych praktyk globalnych i plan budowania przewagi ESG na dekadę.'
+                    : 'The premium version gives you access to global best practices and a plan to build ESG advantage for a decade.'
+            },
+            C: {
+                summary: language === 'pl'
+                    ? 'Doskonały wynik ESG to nie koniec, ale początek nowej ery. Masz szansę zostać wzorcem dla całej branży i kształtować standardy ESG. To wymaga strategicznego myślenia i odważnych decyzji, ale nagrody są ogromne.'
+                    : 'An excellent ESG score is not the end, but the beginning of a new era. You have a chance to become a role model for the entire industry and shape ESG standards. This requires strategic thinking and bold decisions, but the rewards are enormous.',
+                nextSteps: language === 'pl'
+                    ? ['Stwórz własne standardy ESG i certyfikaty branżowe.', 'Rozwijaj technologie ESG i rozwiązania dla innych firm.', 'Przygotuj strategię wpływu na politykę ESG w regionie.']
+                    : ['Create your own ESG standards and industry certifications.', 'Develop ESG technologies and solutions for other companies.', 'Prepare a strategy to influence ESG policy in the region.'],
+                cta: language === 'pl'
+                    ? 'Kształtuj przyszłość ESG w branży. Skontaktuj się z nami: esgsync.pro | esgsync@protonmail.com'
+                    : 'Shape the future of ESG in the industry. Contact us: esgsync.pro | esgsync@protonmail.com',
+                premiumTeaser: language === 'pl'
+                    ? 'Wersja premium zawiera plan budowania ekosystemu ESG i strategię wpływu na całą branżę.'
+                    : 'The premium version includes a plan to build an ESG ecosystem and a strategy to influence the entire industry.'
+            }
+        }
+    };
+    
+    // Return content with AI-selected variants
+    return {
+        summary: content[level][variants.summary].summary,
+        nextSteps: content[level][variants.nextSteps].nextSteps,
+        cta: content[level][variants.cta].cta,
+        premiumTeaser: content[level][variants.premiumTeaser].premiumTeaser
+    };
+}
+
+/**
  * Generates HTML content for PDF based on assessment scores and language
  * @param {Object} scores - Assessment scores object
  * @param {string} currentLanguage - Current language ('pl' or 'en')
  * @param {Function} t - Translation function
  * @param {Object} recommendations - Recommendations object
  * @param {Object} clientDetails - Client details from survey form
- * @returns {string} HTML content string
+ * @returns {Promise<string>} HTML content string
  */
-function generatePdfHtmlContent(scores, currentLanguage, t, recommendations, clientDetails) {
-    // Determine ESG level and get random version
+async function generatePdfHtmlContent(scores, currentLanguage, t, recommendations, clientDetails) {
+    // Determine ESG level and get AI-selected variants
     const esgLevel = getEsgLevel(scores.percent);
-    const version = getRandomVersion();
-    const esgContent = getEsgContent(esgLevel, version, currentLanguage);
+    
+    // Use AI to select random variants for each text section
+    let selectedVariants;
+    if (typeof selectTextVariantsWithAI === 'function') {
+        selectedVariants = await selectTextVariantsWithAI(esgLevel, currentLanguage);
+    } else {
+        // Fallback if AI function is not available
+        const variants = ['A', 'B', 'C'];
+        selectedVariants = {
+            summary: variants[Math.floor(Math.random() * 3)],
+            nextSteps: variants[Math.floor(Math.random() * 3)],
+            cta: variants[Math.floor(Math.random() * 3)],
+            premiumTeaser: variants[Math.floor(Math.random() * 3)]
+        };
+    }
+    
+    const esgContent = getEsgContentWithVariants(esgLevel, selectedVariants, currentLanguage);
     
     const levels = {
         beginner: t('survey.level.beginner', currentLanguage === 'pl' ? 'Początkowy poziom' : 'Beginner level'),
@@ -751,11 +918,13 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = { 
         generatePdfHtmlContent, 
         templateString,
-        getRandomVersion
+        getRandomVersion,
+        getEsgContentWithVariants
     };
 } else {
     // Make functions available globally in browser
     window.generatePdfHtmlContent = generatePdfHtmlContent;
     window.templateString = templateString;
     window.getRandomVersion = getRandomVersion;
+    window.getEsgContentWithVariants = getEsgContentWithVariants;
 }
