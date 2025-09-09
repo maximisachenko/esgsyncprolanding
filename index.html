@@ -9,11 +9,14 @@
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="config.js"></script>
     <script src="pdf-template.js"></script>
     
     <!-- OpenAI API Integration -->
     <script>
-        const OPENAI_API_KEY = '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';
+        // TODO: Move to environment variable for production
+        // Get API key from environment or use fallback
+        const OPENAI_API_KEY = window.OPENAI_API_KEY;
         
         /**
          * Use AI to randomly select text variant (A, B, or C) for each stage
@@ -22,109 +25,8 @@
          * @returns {Promise<Object>} Object with selected variants for each stage
          */
         async function selectTextVariantsWithAI(level, language) {
-            // Use a CORS proxy to access OpenAI API
-            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-            const openaiUrl = 'https://api.openai.com/v1/chat/completions';
-            
-            try {
-                const prompt = `You are an AI assistant that randomly selects text variants for ESG report generation. 
-                
-                For the ESG level "${level}" in language "${language}", please randomly select one variant (A, B, or C) for each stage.
-                
-                Return ONLY a JSON object in this exact format:
-                {
-                    "summary": "A",
-                    "nextSteps": "B", 
-                    "cta": "C",
-                    "premiumTeaser": "A"
-                }
-                
-                Each value must be exactly "A", "B", or "C". Make the selection truly random.`;
-
-                const response = await fetch(proxyUrl + openaiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        model: 'gpt-3.5-turbo',
-                        messages: [
-                            {
-                                role: 'user',
-                                content: prompt
-                            }
-                        ],
-                        max_tokens: 100,
-                        temperature: 1.0
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`OpenAI API error: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const content = data.choices[0].message.content.trim();
-                
-                // Parse the JSON response
-                const variants = JSON.parse(content);
-                
-                // Validate that all required fields are present and valid
-                const validVariants = ['A', 'B', 'C'];
-                if (!variants.summary || !validVariants.includes(variants.summary)) {
-                    throw new Error('Invalid summary variant');
-                }
-                if (!variants.nextSteps || !validVariants.includes(variants.nextSteps)) {
-                    throw new Error('Invalid nextSteps variant');
-                }
-                if (!variants.cta || !validVariants.includes(variants.cta)) {
-                    throw new Error('Invalid cta variant');
-                }
-                if (!variants.premiumTeaser || !validVariants.includes(variants.premiumTeaser)) {
-                    throw new Error('Invalid premiumTeaser variant');
-                }
-                
-                return variants;
-                
-            } catch (error) {
-                // Try alternative approach - use a different proxy or method
-                try {
-                    // Use a different CORS proxy
-                    const altProxyUrl = 'https://api.allorigins.win/raw?url=';
-                    const response = await fetch(altProxyUrl + encodeURIComponent(openaiUrl), {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: 'gpt-3.5-turbo',
-                            messages: [
-                                {
-                                    role: 'user',
-                                    content: `Randomly select one variant (A, B, or C) for each stage. Return JSON: {"summary":"A","nextSteps":"B","cta":"C","premiumTeaser":"A"}`
-                                }
-                            ],
-                            max_tokens: 50,
-                            temperature: 1.0
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        const content = data.choices[0].message.content.trim();
-                        const variants = JSON.parse(content);
-                        return variants;
-                    }
-                } catch (altError) {
-                    // Silent fallback
-                }
-                
-                // Final fallback - AI-like intelligent selection
-                return generateAILikeVariants(level, language);
-            }
+            // Use AI-like intelligent selection (no external API calls)
+            return generateAILikeVariants(level, language);
         }
         
         /**
@@ -180,60 +82,6 @@
             return selectedVariants;
         }
         
-        // Test function to verify AI variant selection (silent)
-        async function testAIVariantSelection() {
-            try {
-                const variants = await selectTextVariantsWithAI('medium', 'pl');
-                
-                // Verify all required fields are present
-                const requiredFields = ['summary', 'nextSteps', 'cta', 'premiumTeaser'];
-                const allFieldsPresent = requiredFields.every(field => variants[field]);
-                
-                return allFieldsPresent;
-            } catch (error) {
-                return false;
-            }
-        }
-        
-        // Test function to verify PDF generation with AI variants (silent)
-        async function testPdfGenerationWithAI() {
-            try {
-                // Mock scores for testing
-                const mockScores = {
-                    total: 45,
-                    percent: 53,
-                    environment: 15,
-                    social: 20,
-                    governance: 10
-                };
-                
-                // Mock translation function
-                const mockT = (key, fallback) => fallback || key;
-                
-                // Mock recommendations
-                const mockRec = {
-                    title: 'Test Recommendations',
-                    how: 'Test how',
-                    why: 'Test why'
-                };
-                
-                // Mock client details
-                const mockClientDetails = {
-                    email: 'test@example.com',
-                    company: 'Test Company',
-                    industry: 'Technology'
-                };
-                
-                const htmlContent = await generatePdfHtmlContent(mockScores, 'pl', mockT, mockRec, mockClientDetails);
-                
-                // Check if content contains different variants
-                const hasVariants = htmlContent.includes('summary') || htmlContent.includes('nextSteps');
-                
-                return hasVariants;
-            } catch (error) {
-                return false;
-            }
-        }
         
         // Success toast notification function
         function showSuccessToast(message) {
